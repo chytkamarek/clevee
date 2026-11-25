@@ -1,5 +1,6 @@
 import { createRng } from '../core/rng.ts'
 import type { Game } from '../core/types.ts'
+import { AdditionIcon } from './AdditionIcon.tsx'
 import { AdditionRenderer } from './AdditionRenderer.tsx'
 
 export interface AdditionTask {
@@ -11,6 +12,9 @@ export interface AdditionTask {
 export const additionGame: Game<AdditionTask, number> = {
   id: 'demo-addition',
   title: { cs: 'Ukázka: sčítání', en: 'Demo: addition' },
+  module: 'math',
+  icon: AdditionIcon,
+  levels: 3,
   generate(difficulty, seed) {
     const rng = createRng(seed)
     const max = 10 * Math.max(1, Math.floor(difficulty))

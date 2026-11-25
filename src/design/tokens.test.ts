@@ -63,6 +63,30 @@ describe('src/index.css follows the design system', () => {
     expect(bad['font-weight']).toBe('400')
   })
 
+  it('gives each place on the home page its own colour token; parent captions stay readable on it', () => {
+    const muted = resolveValue('var(--muted)', tokens)
+    for (const place of ['math', 'language', 'space']) {
+      expect(tokens, place).toHaveProperty(`place-${place}`)
+      expect(tokens, place).toHaveProperty(`place-${place}-deep`)
+      const rule = ruleDeclarations(css, `.place--${place},\n.path--${place}`)
+      expect(rule['--place']).toBe(`var(--place-${place})`)
+      expect(contrastRatio(muted, resolveValue(`var(--place-${place})`, tokens))).toBeGreaterThanOrEqual(4.5)
+    }
+    expect(ruleDeclarations(css, '.place__caption,\n.tile__caption').color).toBe('var(--muted)')
+  })
+
+  it('a passed stone carries a light print, so it differs from a stone ahead not only by colour', () => {
+    expect(ruleDeclarations(css, '.stone--passed').background).toMatch(/var\(--surface\).*var\(--place-deep\)/)
+    expect(ruleDeclarations(css, '.stone--ahead').background).toBe('var(--stone-ahead)')
+  })
+
+  it('screens fade in once with the calm duration, and not under reduced motion', () => {
+    expect(ruleDeclarations(css, '.screen').animation).toBe('screen-in var(--duration-calm) ease-out')
+    const reduced = /@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/g
+    const blocks = [...rest.matchAll(reduced)].map((m) => m[1] ?? '').join('\n')
+    expect(blocks).toMatch(/\.screen\s*\{\s*animation: none;/)
+  })
+
   it('draws Klíček in the mascot colours from the design system', () => {
     expect(tokens).toMatchObject({
       'klicek-yellow': '#ffc93c',

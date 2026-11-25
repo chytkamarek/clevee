@@ -4,6 +4,9 @@ import type { Game } from '../types.ts'
 export const dummyGame: Game<{ n: number; difficulty: number }, number> = {
   id: 'dummy',
   title: { cs: 'Testovací hra', en: 'Test game' },
+  module: 'math',
+  icon: () => <svg aria-hidden="true" />,
+  levels: 3,
   generate: (difficulty, seed) => ({ n: seed, difficulty }),
   validate: (task, answer) => answer === task.n + 1,
   Renderer: ({ task, answer, onAnswer, onHint, locked }) => (

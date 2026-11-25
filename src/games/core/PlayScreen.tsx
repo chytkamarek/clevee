@@ -1,20 +1,23 @@
 import type { FormEvent } from 'react'
+import { BackIcon } from '../../hub/icons.tsx'
 import type { AnyGame, Difficulty, Locale } from './types.ts'
 import { usePlaySession, type PlaySessionDeps } from './usePlaySession.ts'
 
 const strings = {
-  cs: { home: 'Domů', check: 'Zkontrolovat', next: 'Další úloha', correct: 'Správně.', wrong: 'Ještě to nesedí.' },
-  en: { home: 'Home', check: 'Check', next: 'Next task', correct: 'Correct.', wrong: 'Not quite yet.' },
+  cs: { back: 'Zpět', check: 'Zkontrolovat', next: 'Další úloha', correct: 'Správně.', wrong: 'Ještě to nesedí.' },
+  en: { back: 'Back', check: 'Check', next: 'Next task', correct: 'Correct.', wrong: 'Not quite yet.' },
 } satisfies Record<Locale, Record<string, string>>
 
 export interface PlayScreenProps extends PlaySessionDeps {
   game: AnyGame
   difficulty?: Difficulty
   locale?: Locale
+  /** Where the back arrow leads: the game's path, or home. */
+  backHref?: string
 }
 
 /** Shared screen for every game: task → check → result → next task. */
-export function PlayScreen({ game, difficulty = 1, locale = 'cs', ...deps }: PlayScreenProps) {
+export function PlayScreen({ game, difficulty = 1, locale = 'cs', backHref = '#/', ...deps }: PlayScreenProps) {
   const { state, setAnswer, hint, check, next } = usePlaySession({ game, difficulty, locale }, deps)
   const t = strings[locale]
   const { Renderer } = game
@@ -28,8 +31,8 @@ export function PlayScreen({ game, difficulty = 1, locale = 'cs', ...deps }: Pla
   return (
     <main className="play">
       <header className="play__header">
-        <a className="play__home" href="#/">
-          ← {t.home}
+        <a className="icon-button" href={backHref} aria-label={t.back}>
+          <BackIcon className="icon-button__icon" />
         </a>
         <h1 className="play__title">{game.title[locale]}</h1>
       </header>
