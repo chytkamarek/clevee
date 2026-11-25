@@ -59,19 +59,12 @@ describe('board', () => {
     expect(board[1]!.at).toBeNull()
   })
 
-  it('rotation that would stick out sends the piece to the tray', () => {
-    let board = placePiece(task, initialBoard(task), 0, 0, 1) // (0,1),(0,2),(1,1)
-    board = rotatePiece(task, board, 0) // rotation 1 at (0,1): (0,1),(0,2),(1,2) fits
-    board = rotatePiece(task, board, 0) // rotation 2 at (0,1): (0,2),(1,1),(1,2) fits
-    board = rotatePiece(task, board, 0) // rotation 3 at (0,1): (0,1),(1,1),(1,2) fits
-    expect(board[0]!.at).not.toBeNull()
-    board = placePiece(task, board, 0, 0, 0) // rotation 3 at (0,0): (0,0),(1,0),(1,1)
-    board = placePiece(task, board, 1, 0, 1) // rotation 0 at (0,1): (0,1),(0,2),(1,1) overlaps → tray
-    expect(board[1]!.at).toBeNull()
-    board = placePiece(task, board, 0, 0, 1) // rotation 3 at (0,1): (0,1),(1,1),(1,2)
-    board = rotatePiece(task, board, 0) // rotation 0 at (0,1): (0,1),(0,2),(1,1) fits
-    board = placePiece(task, board, 0, 1, 1) // rotation 0 at (1,1): (1,1),(1,2),(2,1) sticks out
-    expect(board[0]!.at).toBeNull()
+  it('rotation that would stick out sends the piece to the tray, turned', () => {
+    const dominoTask: PolyominoTask = { ...task, pieces: [{ id: 0, cells: cells([0, 0], [0, 1]) }] }
+    let board = placePiece(dominoTask, initialBoard(dominoTask), 0, 1, 1) // (1,1),(1,2)
+    expect(board[0]!.at).toEqual({ row: 1, col: 1 })
+    board = rotatePiece(dominoTask, board, 0) // upright at (1,1): (1,1),(2,1) — below the shape
+    expect(board[0]).toMatchObject({ rotation: 1, at: null })
   })
 
   it('mirrors only where the level allows it', () => {
