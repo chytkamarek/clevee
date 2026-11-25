@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ATTEMPTS_KEY, loadAttempts, saveAttempt, type Attempt, type AttemptStorage } from './attempts.ts'
+import { ATTEMPTS_KEY, MAX_ATTEMPTS, loadAttempts, saveAttempt, type Attempt, type AttemptStorage } from './attempts.ts'
 
 const memory = (initial?: string): AttemptStorage & { data: Map<string, string> } => {
   const data = new Map<string, string>(initial === undefined ? [] : [[ATTEMPTS_KEY, initial]])
@@ -36,10 +36,25 @@ describe('attempt history', () => {
   it.each([
     ['invalid JSON', '{not json'],
     ['not an array', '{"gameId":"x"}'],
-    ['malformed item', JSON.stringify([attempt(), { gameId: 'x', correct: 'yes' }])],
     ['null', 'null'],
   ])('reads corrupt data (%s) as empty history', (_, raw) => {
     expect(loadAttempts(memory(raw))).toEqual([])
+  })
+
+  it('keeps the valid records when one record is malformed, also across the next save', () => {
+    const storage = memory(JSON.stringify([attempt(), { gameId: 'x', correct: 'yes' }, attempt({ seed: 4 })]))
+    expect(loadAttempts(storage)).toEqual([attempt(), attempt({ seed: 4 })])
+    saveAttempt(storage, attempt({ seed: 5 }))
+    expect(loadAttempts(storage).map((a) => a.seed)).toEqual([3, 4, 5])
+  })
+
+  it('keeps only the newest MAX_ATTEMPTS attempts', () => {
+    const storage = memory(JSON.stringify(Array.from({ length: MAX_ATTEMPTS }, (_, i) => attempt({ seed: i }))))
+    saveAttempt(storage, attempt({ seed: -1 }))
+    const all = loadAttempts(storage)
+    expect(all).toHaveLength(MAX_ATTEMPTS)
+    expect(all[0]?.seed).toBe(1)
+    expect(all.at(-1)?.seed).toBe(-1)
   })
 
   it('replaces corrupt data with a valid history on the next save', () => {

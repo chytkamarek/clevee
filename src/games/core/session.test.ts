@@ -58,7 +58,12 @@ describe('play session', () => {
       { type: 'check', now: 1 },
       { type: 'next', seed: 9, now: 50 },
     )
-    expect(s).toEqual({ phase: 'answering', task: { n: 9, difficulty: 2 }, seed: 9, answer: null, hints: 0, startedAt: 50 })
+    expect(s).toEqual({ phase: 'answering', round: 1, task: { n: 9, difficulty: 2 }, seed: 9, answer: null, hints: 0, startedAt: 50 })
+  })
+
+  it('next task gets a new round even when the seed repeats', () => {
+    const s = run(startSession(config, 5, 0), { type: 'answer', answer: 6 }, { type: 'check', now: 1 }, { type: 'next', seed: 5, now: 2 })
+    expect(s.round).toBe(1)
   })
 
   it('next is ignored before the answer is checked', () => {

@@ -37,7 +37,7 @@ export function PlayScreen({ game, difficulty = 1, locale = 'cs', ...deps }: Pla
       <form className="play__form" onSubmit={onSubmit} noValidate>
         <div className="play__task">
           <Renderer
-            key={state.seed}
+            key={state.round}
             task={state.task}
             answer={state.answer}
             onAnswer={setAnswer}
@@ -55,12 +55,12 @@ export function PlayScreen({ game, difficulty = 1, locale = 'cs', ...deps }: Pla
         </p>
 
         {state.phase === 'answering' ? (
-          <button className="play__button" type="submit" disabled={state.answer === null}>
+          <button key="check" className="play__button" type="submit" disabled={state.answer === null}>
             {t.check}
           </button>
         ) : (
-          // autoFocus: focus moves here so Enter (or a tap) continues
-          <button className="play__button" type="submit" autoFocus>
+          // Own key → fresh mount, so autoFocus moves focus here and Enter continues
+          <button key="next" className="play__button" type="submit" autoFocus>
             {t.next}
           </button>
         )}

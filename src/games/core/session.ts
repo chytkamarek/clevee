@@ -9,6 +9,8 @@ export type SessionState =
   | {
       phase: 'answering'
       task: unknown
+      /** Task counter in this session; the renderer is keyed by it. */
+      round: number
       seed: number
       answer: unknown
       hints: number
@@ -17,6 +19,7 @@ export type SessionState =
   | {
       phase: 'result'
       task: unknown
+      round: number
       seed: number
       answer: unknown
       hints: number
@@ -37,9 +40,10 @@ export interface SessionConfig {
   locale: Locale
 }
 
-export function startSession(config: SessionConfig, seed: number, now: number): SessionState {
+export function startSession(config: SessionConfig, seed: number, now: number, round = 0): SessionState {
   return {
     phase: 'answering',
+    round,
     task: config.game.generate(config.difficulty, seed, config.locale),
     seed,
     answer: null,
@@ -77,6 +81,6 @@ export function sessionReducer(
       }
     }
     case 'next':
-      return state.phase === 'result' ? startSession(config, action.seed, action.now) : state
+      return state.phase === 'result' ? startSession(config, action.seed, action.now, state.round + 1) : state
   }
 }
