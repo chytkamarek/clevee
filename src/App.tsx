@@ -42,8 +42,7 @@ function Screen({ route, games }: { route: Route; games: GameRegistry }) {
       )
     }
     if (route.name === 'path') return <GamePath game={game} />
-    const level = Math.min(route.level, game.levels)
-    return <PlayScreen key={`${game.id}/${level}`} game={game} difficulty={level} backHref={pathHref(game.id)} />
+    return <PlayScreen game={game} difficulty={route.level} backHref={pathHref(game.id)} />
   }
 
   return (
@@ -55,11 +54,18 @@ function Screen({ route, games }: { route: Route; games: GameRegistry }) {
   )
 }
 
+/** A level past the game's last one plays the last one. */
+function clampLevel(route: Route, games: GameRegistry): Route {
+  if (route.name !== 'play') return route
+  const game = games.get(route.gameId)
+  return game ? { ...route, level: Math.min(route.level, Math.max(1, game.levels)) } : route
+}
+
 const screenKey = (route: Route) =>
   route.name === 'home' ? 'home' : route.name === 'path' ? `path/${route.gameId}` : `play/${route.gameId}/${route.level}`
 
 export default function App({ games = appGames }: { games?: GameRegistry }) {
-  const route = parseRoute(useHash())
+  const route = clampLevel(parseRoute(useHash()), games)
   // New key per screen → the screen mounts fresh and fades in once (CSS, off under reduced motion)
   return (
     <div className="screen" key={screenKey(route)}>

@@ -35,6 +35,7 @@ describe('GamePath', () => {
     render(<GamePath game={dummyGame} storage={storage} />)
     const passed = screen.getByRole('link', { name: 'Kamínek 1, prošlý, hrát znovu' })
     expect(passed).toHaveClass('stone--passed')
+    expect(passed).not.toHaveClass('stone--ahead')
     expect(passed).toHaveAttribute('href', '#/hra/dummy/1')
     expect(screen.getByRole('link', { name: /Kamínek 2, tady stojí Klíček/ })).toHaveAttribute('aria-current', 'step')
     expect(screen.getByRole('link', { name: 'Hrát' })).toHaveAttribute('href', '#/hra/dummy/2')

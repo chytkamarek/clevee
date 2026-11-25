@@ -62,7 +62,7 @@
   --mascot-height: clamp(11rem, 32vh, 18rem);
   --tile-min: 9rem;
   --stone-size: 4rem;
-  --path-klicek-height: 6rem;
+  --path-klicek-height: 10rem;
 
   /* Hairline drawn as an inset shadow (board grid, piece edge) */
   --line-thin: 1px;
@@ -424,6 +424,8 @@ body {
 .path__klicek {
   height: var(--path-klicek-height);
   width: auto;
+  /* The drawing's frame has room under the drop; let Klíček stand right on the stone */
+  margin-bottom: calc(-1 * var(--space-3));
 }
 
 .stone {
@@ -434,7 +436,8 @@ body {
 }
 
 .stone--passed {
-  background: var(--place-deep);
+  /* A light print inside, so passed and ahead differ in shape too, not only in colour */
+  background: radial-gradient(circle, var(--surface) 0 22%, var(--place-deep) 24%);
   box-shadow: var(--shadow-card);
 }
 

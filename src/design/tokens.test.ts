@@ -75,6 +75,11 @@ describe('src/index.css follows the design system', () => {
     expect(ruleDeclarations(css, '.place__caption,\n.tile__caption').color).toBe('var(--muted)')
   })
 
+  it('a passed stone carries a light print, so it differs from a stone ahead not only by colour', () => {
+    expect(ruleDeclarations(css, '.stone--passed').background).toMatch(/var\(--surface\).*var\(--place-deep\)/)
+    expect(ruleDeclarations(css, '.stone--ahead').background).toBe('var(--stone-ahead)')
+  })
+
   it('screens fade in once with the calm duration, and not under reduced motion', () => {
     expect(ruleDeclarations(css, '.screen').animation).toBe('screen-in var(--duration-calm) ease-out')
     const reduced = /@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/g
