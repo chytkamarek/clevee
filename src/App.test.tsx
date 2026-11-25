@@ -3,11 +3,14 @@ import { afterEach, describe, expect, it } from 'vitest'
 import App from './App.tsx'
 import { createRegistry } from './games/core/registry.ts'
 import { dummyGame } from './games/core/testing/dummyGame.tsx'
+import { ATTEMPTS_KEY } from './games/core/attempts.ts'
+import { GROWTH_KEY, loadGrowth } from './klicek/progress.ts'
 
 const games = createRegistry([dummyGame])
 
 afterEach(() => {
   window.location.hash = ''
+  localStorage.clear()
 })
 
 describe('App', () => {
@@ -32,5 +35,38 @@ describe('App', () => {
     window.location.hash = '#/hra/neexistuje'
     render(<App games={games} />)
     expect(screen.getByText('Tuhle hru neznám.')).toBeInTheDocument()
+  })
+
+  describe('Klíček on the home page', () => {
+    it('starts as a seed', () => {
+      render(<App games={games} />)
+      expect(screen.getByRole('img', { name: 'Klíček, semínko' })).toBeInTheDocument()
+    })
+
+    it('grows from solved tasks in the stored history', () => {
+      const solved = Array.from({ length: 40 }, (_, i) => ({
+        gameId: 'dummy', difficulty: 1, seed: i, correct: true, durationMs: 1, hints: 0, at: i + 1,
+      }))
+      localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(solved))
+      render(<App games={games} />)
+      expect(screen.getByRole('img', { name: 'Klíček, mladý stromek' })).toBeInTheDocument()
+      // Seen now, so the next visit does not repeat the change
+      expect(loadGrowth(localStorage)).toMatchObject({ solved: 40, seen: 40 })
+    })
+
+    it('shows the last seen Klíček fading into the grown one', () => {
+      localStorage.setItem(GROWTH_KEY, JSON.stringify({ solved: 120, seen: 3, last: null }))
+      const { container } = render(<App games={games} />)
+      expect(screen.getByRole('img', { name: 'Klíček, jabloň s jablíčky' })).toBeInTheDocument()
+      const phases = [...container.querySelectorAll('.klicek svg')].map((s) => s.getAttribute('data-phase'))
+      expect(phases).toEqual(['2', '9'])
+    })
+
+    it('stays a seed and does not crash on corrupt storage', () => {
+      localStorage.setItem(ATTEMPTS_KEY, '{oops')
+      localStorage.setItem(GROWTH_KEY, '{oops')
+      render(<App games={games} />)
+      expect(screen.getByRole('img', { name: 'Klíček, semínko' })).toBeInTheDocument()
+    })
   })
 })

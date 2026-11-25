@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+import { loadGrowth } from '../../klicek/progress.ts'
 import { loadAttempts, type AttemptStorage } from './attempts.ts'
 import { PlayScreen } from './PlayScreen.tsx'
 import { dummyGame } from './testing/dummyGame.tsx'
@@ -48,6 +49,8 @@ describe('PlayScreen', () => {
       { gameId: 'dummy', difficulty: 3, seed: 10, correct: true, durationMs: 500, hints: 1, at: 2000 },
       { gameId: 'dummy', difficulty: 3, seed: 20, correct: false, durationMs: 500, hints: 0, at: 3000 },
     ])
+    // Klíček grows from the solved task only
+    expect(loadGrowth(storage)?.solved).toBe(1)
   })
 
   it('submits with Enter from the answer field', () => {
