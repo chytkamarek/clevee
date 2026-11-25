@@ -103,6 +103,16 @@ describe('stored growth', () => {
     expect(play(storage, attempt())).toMatchObject({ solved: 3, seen: 2 })
   })
 
+  it('marking as seen from an older read never undoes newer progress (another tab)', () => {
+    const storage = memory()
+    play(storage, attempt())
+    const stale = syncGrowth(storage)
+    play(storage, attempt())
+    play(storage, attempt())
+    markSeen(storage, stale)
+    expect(loadGrowth(storage)).toMatchObject({ solved: 3, seen: 1 })
+  })
+
   it('never reports having seen more than was solved', () => {
     const storage = memory({ [GROWTH_KEY]: '{"solved":2,"seen":9,"last":null}' })
     expect(loadGrowth(storage)).toEqual({ solved: 2, seen: 2, last: null })

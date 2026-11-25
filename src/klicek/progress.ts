@@ -30,7 +30,11 @@ function isMark(v: unknown): v is AttemptMark {
 
 const sameAttempt = (a: Attempt, m: AttemptMark) => a.gameId === m.gameId && a.seed === m.seed && a.at === m.at
 
-/** Stored growth, or `null` when missing or unreadable. */
+/**
+ * Stored growth, or `null` when missing or unreadable. The caller then rebuilds it from the
+ * attempt history, which holds only the newest `MAX_ATTEMPTS` — a corrupt record past that
+ * count loses the older part. Rare, and still better than starting from a seed.
+ */
 export function loadGrowth(storage: AttemptStorage): Growth | null {
   try {
     const raw = storage.getItem(GROWTH_KEY)
@@ -45,7 +49,11 @@ export function loadGrowth(storage: AttemptStorage): Growth | null {
   }
 }
 
-/** Pure: adds the correct attempts in `history` that come after `growth.last`. */
+/**
+ * Pure: adds the correct attempts in `history` that come after `growth.last`.
+ * A marker missing from the history (trimmed away, history cleared) means everything there is new;
+ * with a sync after every save that only happens when the old attempts are gone too.
+ */
 export function countNew(growth: Growth, history: readonly Attempt[]): Growth {
   const { last } = growth
   let from = 0
@@ -88,7 +96,14 @@ export function syncGrowth(storage: AttemptStorage | null): Growth {
   return growth
 }
 
-/** Records that the child has now seen Klíček as grown as `growth`. */
+/**
+ * Records that the child has now seen Klíček as grown as `growth`. Changes only `seen` in the
+ * stored record, so an older `growth` (another tab) never overwrites newer progress.
+ */
 export function markSeen(storage: AttemptStorage | null, growth: Growth) {
-  if (storage && growth.seen !== growth.solved) save(storage, { ...growth, seen: growth.solved })
+  if (!storage) return
+  const current = loadGrowth(storage)
+  if (!current) return
+  const seen = Math.min(Math.max(current.seen, growth.solved), current.solved)
+  if (seen !== current.seen) save(storage, { ...current, seen })
 }

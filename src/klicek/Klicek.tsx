@@ -30,12 +30,15 @@ export function Klicek({ from, to, locale = 'cs' }: KlicekProps) {
     return () => cancelAnimationFrame(id)
   }, [grown])
 
-  const layer = (visible: boolean) => `klicek__layer${visible ? '' : ' klicek__layer--hidden'}`
+  const layer = (visible: boolean, after = false) =>
+    `klicek__layer${visible ? '' : ' klicek__layer--hidden'}${after ? ' klicek__layer--after' : ''}`
 
+  // Fade-through: the old drawing fades out first, then the new one fades in,
+  // so two faces never show at once (e.g. the face moving from the drop into the trunk)
   return (
     <div className="klicek" role="img" aria-label={mascotLabel(to.phase, locale)}>
       {changed && <KlicekArt stage={from} className={layer(!grown)} />}
-      <KlicekArt stage={to} className={layer(grown)} />
+      <KlicekArt stage={to} className={layer(grown, changed)} />
     </div>
   )
 }

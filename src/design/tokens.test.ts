@@ -85,6 +85,8 @@ describe('src/index.css follows the design system', () => {
     expect(layer.animation).toBeUndefined()
     const reduced = /@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/g
     const blocks = [...rest.matchAll(reduced)].map((m) => m[1] ?? '').join('\n')
-    expect(ruleDeclarations(blocks, '.klicek__layer').transition).toBe('none')
+    expect(blocks).toMatch(/\.klicek__layer,\s*\.klicek__layer--after\s*\{\s*transition: none;/)
+    // Fade-through: the new drawing starts only after the old one is gone
+    expect(ruleDeclarations(css, '.klicek__layer--after')['transition-delay']).toBe('var(--duration-grow)')
   })
 })

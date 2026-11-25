@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import App from './App.tsx'
 import { createRegistry } from './games/core/registry.ts'
@@ -54,12 +54,22 @@ describe('App', () => {
       expect(loadGrowth(localStorage)).toMatchObject({ solved: 40, seen: 40 })
     })
 
-    it('shows the last seen Klíček fading into the grown one', () => {
+    it('shows the last seen Klíček fading into the grown one', async () => {
       localStorage.setItem(GROWTH_KEY, JSON.stringify({ solved: 120, seen: 3, last: null }))
       const { container } = render(<App games={games} />)
       expect(screen.getByRole('img', { name: 'Klíček, jabloň s jablíčky' })).toBeInTheDocument()
-      const phases = [...container.querySelectorAll('.klicek svg')].map((s) => s.getAttribute('data-phase'))
-      expect(phases).toEqual(['2', '9'])
+      const layers = () =>
+        [...container.querySelectorAll('.klicek svg')].map((s) => `${s.getAttribute('data-phase')} ${s.getAttribute('class')}`)
+      expect(layers()).toEqual(['2 klicek__layer', '9 klicek__layer klicek__layer--hidden klicek__layer--after'])
+      await waitFor(() =>
+        expect(layers()).toEqual(['2 klicek__layer klicek__layer--hidden', '9 klicek__layer klicek__layer--after']),
+      )
+    })
+
+    it('shows a single drawing when nothing changed since last time', () => {
+      localStorage.setItem(GROWTH_KEY, JSON.stringify({ solved: 3, seen: 3, last: null }))
+      const { container } = render(<App games={games} />)
+      expect([...container.querySelectorAll('.klicek svg')].map((s) => s.getAttribute('class'))).toEqual(['klicek__layer'])
     })
 
     it('stays a seed and does not crash on corrupt storage', () => {
