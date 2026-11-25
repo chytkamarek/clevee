@@ -15,9 +15,9 @@ Při návrhu issue i v review je porušení tohoto principu nález stejné váhy
 
 ## Design system
 
-Nové obrazovky a hry navrhuj podle [design systému clevee](https://claude.ai/artifact/HJ3r3QituYFAzmUKs8jorx) (barvy, mezery, rohy, písmo, stín, pohyb, komponenty).
+Nové obrazovky a hry navrhuj podle skillu `design-system` (`.claude/skills/design-system/`: pravidla, tokeny, komponenty, Klíček). Vizuální náhledy jsou v [artifactu design systému clevee](https://claude.ai/artifact/HJ3r3QituYFAzmUKs8jorx).
 
-- **Zdroj pravdy jsou tokeny v `:root` v `src/index.css`.** Design system se s nimi srovnává, ne naopak: po změně tokenu aktualizuj i design system.
+- **Zdroj pravdy jsou tokeny v `:root` v `src/index.css`.** Design system se s nimi srovnává, ne naopak: po změně tokenu nebo pravidla aktualizuj skill i artifact.
 - Mimo `:root` žádné literální barvy; mezery (`space-*`), rohy (`radius-*`), rozměry (`control-min`, `button-min`, `content-max`), stín (`shadow-card`) a délky přechodů (`duration-calm`) ber z tokenů. Hlídá to `src/design/tokens.test.ts`.
 - Text na `accent` je vždy ve `fg`.
 
