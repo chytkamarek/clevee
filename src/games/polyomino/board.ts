@@ -73,7 +73,10 @@ export function toAnswer(board: BoardState): PolyominoAnswer | null {
   return board.map((p) => ({ pieceId: p.id, rotation: p.rotation, mirrored: p.mirrored, row: p.at!.row, col: p.at!.col }))
 }
 
-/** Board cell under a point, given the board's box and cell size in px. */
-export function cellAt(x: number, y: number, rect: { left: number; top: number }, cellPx: number) {
-  return { row: Math.floor((y - rect.top) / cellPx), col: Math.floor((x - rect.left) / cellPx) }
+/**
+ * Board cell a dragged piece snaps to: the cell nearest to the piece's top-left corner
+ * at (left, top) px, given the board's box and the cell size in px.
+ */
+export function snapToCell(left: number, top: number, rect: { left: number; top: number }, cellPx: number) {
+  return { row: Math.round((top - rect.top) / cellPx), col: Math.round((left - rect.left) / cellPx) }
 }

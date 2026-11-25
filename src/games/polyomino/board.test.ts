@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cellAt, initialBoard, mirrorPiece, placePiece, rotatePiece, toAnswer, toTray } from './board.ts'
+import { snapToCell, initialBoard, mirrorPiece, placePiece, rotatePiece, toAnswer, toTray } from './board.ts'
 import { validatePolyomino, type PolyominoTask } from './puzzle.ts'
 import type { Cell } from './shapes.ts'
 
@@ -83,8 +83,9 @@ describe('board', () => {
     expect(validatePolyomino(task, answer!)).toBe(true)
   })
 
-  it('maps a point to the board cell under it', () => {
-    expect(cellAt(130, 75, { left: 100, top: 10 }, 32)).toEqual({ row: 2, col: 0 })
-    expect(cellAt(90, 5, { left: 100, top: 10 }, 32)).toEqual({ row: -1, col: -1 })
+  it('snaps a dragged piece to the nearest cell', () => {
+    expect(snapToCell(115, 30, { left: 100, top: 10 }, 32)).toEqual({ row: 1, col: 0 })
+    expect(snapToCell(117, 25, { left: 100, top: 10 }, 32)).toEqual({ row: 0, col: 1 })
+    expect(snapToCell(60, 10, { left: 100, top: 10 }, 32)).toEqual({ row: 0, col: -1 })
   })
 })
