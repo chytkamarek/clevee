@@ -42,8 +42,9 @@ describe('src/index.css follows the design system', () => {
     }
   })
 
-  it('takes radii, shadows and transition lengths from tokens', () => {
-    for (const m of rest.matchAll(/(border-radius|box-shadow|transition)\s*:\s*([^;]+);/g)) {
+  it('takes spacing, radii, shadows and transition lengths from tokens', () => {
+    const props = /(?<![\w-])(padding(?:-\w+)?|margin(?:-\w+)?|gap|border-radius|box-shadow|transition)\s*:\s*([^;]+);/g
+    for (const m of rest.matchAll(props)) {
       expect(m[2], m[0]).not.toMatch(/\d(px|rem|em|ms|s)\b/)
     }
   })
