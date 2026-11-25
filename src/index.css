@@ -418,7 +418,6 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  min-height: calc(var(--path-klicek-height) + var(--stone-size));
 }
 
 .path__klicek {
