@@ -33,7 +33,7 @@ describe('PlayScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Nápověda' }))
     answer('11')
     fireEvent.click(screen.getByRole('button', { name: 'Zkontrolovat' }))
-    expect(screen.getByRole('status')).toHaveTextContent('Správně!')
+    expect(screen.getByRole('status')).toHaveTextContent('Správně.')
 
     fireEvent.click(screen.getByRole('button', { name: 'Další úloha' }))
     expect(screen.getByText('Úloha 20')).toBeInTheDocument()
@@ -42,7 +42,7 @@ describe('PlayScreen', () => {
 
     answer('5')
     fireEvent.click(screen.getByRole('button', { name: 'Zkontrolovat' }))
-    expect(screen.getByRole('status')).toHaveTextContent('Špatně.')
+    expect(screen.getByRole('status')).toHaveTextContent('Ještě to nesedí.')
 
     expect(loadAttempts(storage)).toEqual([
       { gameId: 'dummy', difficulty: 3, seed: 10, correct: true, durationMs: 500, hints: 1, at: 2000 },
@@ -54,6 +54,6 @@ describe('PlayScreen', () => {
     setup()
     answer('11')
     fireEvent.submit(screen.getByLabelText('Odpověď').closest('form') as HTMLFormElement)
-    expect(screen.getByRole('status')).toHaveTextContent('Správně!')
+    expect(screen.getByRole('status')).toHaveTextContent('Správně.')
   })
 })
