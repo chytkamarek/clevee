@@ -7,7 +7,8 @@ Nevýhoda je, že každé zařízení zní jinak a česky často strojově.
 **Doporučení v kostce:** zadání předgenerovat při buildu neurálním hlasem (Azure, česky Vlasta)
 a přibalit je do appky jako malé zvukové soubory, které service worker uloží pro offline. Za běhu
 se nikam nic neposílá. Co předgenerované není, přečte dál systémový hlas z #13. Podrobně níže
-v části [Doporučení](#doporučení).
+v části [Doporučení](#doporučení). Vlastní hlas Klíčka (cesta d) jde přidat jako druhý krok
+bez změny kódu.
 
 Navazující implementační issue: _doplní se odkazem po založení_.
 
@@ -136,17 +137,61 @@ pokud by Vlasta nezněla dobře.
 - **Dynamické texty:** skládání z kousků jde (čísla se nahrají jednou), ale nahrávat se musí
   pečlivě kvůli intonaci.
 
+### d) Vlastní hlas Klíčka (klonovaný nebo navržený)
+
+Klíček má hlas, který nemá žádná jiná appka, a nové věty se přitom dál jen generují, ne nahrávají.
+Technicky je to cesta b1 s jiným hlasem: stejný skript, stejné soubory, stejný precache
+a stejný fallback. Rozhodnutí o hlasu tedy neblokuje implementaci.
+
+Tři varianty:
+
+- **d1, klon skutečného člověka (ElevenLabs Professional Voice Cloning):** mluvčí (rodič,
+  kamarád, profesionál) nahraje 30 minut až 3 hodiny čisté řeči a služba z toho vytrénuje model
+  (hotový za 2–4 hodiny). Potřebuje tarif Creator a vyšší. Rychlejší „Instant“ klon stačí
+  z 1–5 minut, ale zní méně věrně.
+- **d2, navržený hlas (ElevenLabs Voice Design):** hlas vznikne z textového popisu
+  („klidný, měkký ženský hlas, jako rodič čtoucí před spaním“). Služba nabídne tři varianty,
+  vybere se poslechem. Hlas nepatří žádnému člověku, takže odpadá souhlas mluvčího.
+  Čeština je mezi podporovanými jazyky.
+- **d3, Azure Custom Neural Voice:** profesionální klon u Microsoftu. Přístup je omezený
+  (Microsoft musí schválit žádost a účel), trénink trvá 20–40 hodin výpočtu a model se platí
+  i průběžně za hostování. Pro malou appku je to přehnané.
+
+Open-source klonovací modely (XTTS a podobné) mají zpravidla nekomerční licenci vah, pro appku
+proto nejsou.
+
+Hodnocení d1/d2 (ElevenLabs):
+
+- **Čeština, angličtina:** multilingual model zvládá obě a jeden hlas může mluvit oběma
+  jazyky, takže Klíček zní v CZ i EN stejně. To Vlasta s Avou nedokážou. Kvalitu české
+  výslovnosti klonu je ale nutné ověřit poslechem. Ukázka zatím chybí, protože potřebuje
+  účet a u d1 nahrávku mluvčího.
+- **Offline/PWA:** stejné jako b1.
+- **Cena, licence:** placený tarif (Starter ~5–6 USD/měs., PVC od Creator). Komerční licence
+  platí jen pro audio vytvořené během předplatného. To nevadí, protože soubory zůstávají
+  v repu a předplatné stačí zapnout, když se generují nové věty. U d2 je potřeba před nákupem
+  ověřit v podmínkách, že navržený hlas smí do komerční appky.
+- **Soukromí:** data dítěte ven nejdou, stejně jako u b1. U d1 ale odchází **hlas dospělého
+  mluvčího**, tedy biometrický údaj. Je potřeba jeho písemný souhlas s užitím v appce
+  i s uložením modelu u ElevenLabs. V nastavení účtu je třeba vypnout použití dat k tréninku
+  (opt-out). Klon nejde provozovat v režimu bez uchovávání dat. Po skončení spolupráce jde
+  klon smazat.
+- **Údržba:** stejná jako b1. Riziko: hlas existuje jen u jednoho dodavatele. Když ElevenLabs
+  zdraží nebo skončí, nové věty už stejným hlasem nevzniknou. Existující soubory zůstanou.
+  U d1 jde model v nejhorším vytrénovat znovu jinde, pokud si necháme původní nahrávky.
+
 ### Shrnutí
 
-| | a) systémový | b1) neurální předem | b2) neurální za běhu | c) lidský |
-|---|---|---|---|---|
-| Kvalita CZ | kolísá, často strojová | velmi dobrá, všude stejná | velmi dobrá | nejlepší |
-| Kvalita EN | dobrá | velmi dobrá | velmi dobrá | podle mluvčího |
-| Offline | ano | ano (precache) | ne | ano (precache) |
-| Velikost appky | 0 | ~2 MB / jazyk / 100 vět | 0 | ~2 MB / jazyk / 100 vět |
-| Cena | 0 | centy, placený tarif Azure | roste s uživateli, backend | 0 až tisíce Kč |
-| Data ven za běhu | ne (Edge online ano) | ne | ano | ne |
-| Údržba nové věty | žádná | spustit skript | žádná | nahrávat |
+| | a) systémový | b1) neurální předem | b2) neurální za běhu | c) lidský | d) vlastní (ElevenLabs) |
+|---|---|---|---|---|---|
+| Kvalita CZ | kolísá, často strojová | velmi dobrá, všude stejná | velmi dobrá | nejlepší | velmi dobrá (ověřit poslechem) |
+| Kvalita EN | dobrá | velmi dobrá | velmi dobrá | podle mluvčího | velmi dobrá, stejný hlas jako CZ |
+| Jedinečnost | žádná | hlas mají i jiné appky | hlas mají i jiné appky | jedinečný | jedinečný |
+| Offline | ano | ano (precache) | ne | ano (precache) | ano (precache) |
+| Velikost appky | 0 | ~2 MB / jazyk / 100 vět | 0 | ~2 MB / jazyk / 100 vět | ~2 MB / jazyk / 100 vět |
+| Cena | 0 | centy, placený tarif Azure | roste s uživateli, backend | 0 až tisíce Kč | jednotky až desítky USD/měs., jen při generování |
+| Data ven za běhu | ne (Edge online ano) | ne | ano | ne | ne (u d1 jde hlas mluvčího k dodavateli) |
+| Údržba nové věty | žádná | spustit skript | žádná | nahrávat | spustit skript |
 
 ## Dynamické texty
 
@@ -189,6 +234,16 @@ Fallback, tedy co když audio chybí:
 Lidský hlas (c) zůstává otevřený pro pár pevných vět s osobností, např. pozdrav Klíčka,
 pokud se najde mluvčí. Nemá ale nést všechna zadání.
 
+**Vlastní hlas (d) jako druhý krok.** Implementace b1 je na dodavateli hlasu nezávislá: skript
+dostane „poskytovatele“ (Azure, nebo ElevenLabs) a ID hlasu. Postup:
+1. Implementovat b1 s Vlastou. Appka hned zní dobře a ověří se celý řetězec včetně offline.
+2. Na zkoušku vyrobit v ElevenLabs navržený hlas (d2), případně Instant klon (d1)
+   a porovnat poslechem s ukázkou 3.
+3. Bude-li vlastní hlas lepší, přepnout poskytovatele a přegenerovat soubory. Kód se nemění,
+   protože název souboru obsahuje hash hlasu a staré soubory se samy nahradí.
+
+Pro d1 je potřeba nejdřív vyřešit mluvčího a jeho písemný souhlas.
+
 Odložené otázky pro implementaci:
 - tarif Azure S0 a kdo drží klíč (lokálně u vývojáře, nebo secret v CI);
 - formát souborů (AAC `.m4a`, přehraje Safari i Chrome) a jejich pojmenování (hash textu
@@ -204,6 +259,12 @@ Odložené otázky pro implementaci:
 - Google Cloud TTS, ceník: <https://cloud.google.com/text-to-speech/pricing>
 - Google Chirp 3 HD, jazyky: <https://docs.cloud.google.com/text-to-speech/docs/chirp3-hd>
 - ElevenLabs, licence a ceny (sekundární přehled): <https://bigvu.tv/blog/elevenlabs-pricing-2026-plans-credits-commercial-rights-api-costs/>
+- ElevenLabs, Instant vs. Professional Voice Cloning: <https://elevenlabs.io/blog/instant-vs-professional-voice-cloning>
+- ElevenLabs, klonování přes API (tarify): <https://elevenlabs.io/docs/eleven-api/concepts/voice-cloning>
+- ElevenLabs, Voice Design: <https://elevenlabs.io/docs/product/voices/voice-lab/voice-design>
+- ElevenLabs, použití dat k tréninku a opt-out: <https://elevenlabs.io/docs/help-center/legal/is-my-data-used-to-improve-eleven-labs-ai-models>
+- ElevenLabs, režim bez uchovávání dat (klony vyloučené): <https://elevenlabs.io/docs/eleven-api/resources/zero-retention-mode>
+- Azure Custom Neural Voice, omezený přístup: <https://learn.microsoft.com/en-us/legal/cognitive-services/speech-service/text-to-speech/limited-access>
 - Piper, české hlasy: <https://huggingface.co/rhasspy/piper-voices/tree/v1.0.0/cs/cs_CZ>
 - Online hlasy v Edge přes Web Speech API: <https://readium.org/speech/docs/WebSpeech.html>
 
