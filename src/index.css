@@ -142,9 +142,13 @@ body {
 .i-stroke { fill: none; }
 .i-stroke--bold { stroke-width: 4; }
 
-/* Round icon-only link (back, home) */
+/* Round icon-only link or button (back, home, read aloud) */
 .icon-button {
   display: inline-flex;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
   flex: none;
   align-items: center;
   justify-content: center;

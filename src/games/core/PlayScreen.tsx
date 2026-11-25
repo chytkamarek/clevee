@@ -1,11 +1,13 @@
 import type { FormEvent } from 'react'
-import { BackIcon } from '../../hub/icons.tsx'
+import { BackIcon, SpeakerIcon } from '../../hub/icons.tsx'
+import type { SpeechPort } from './speech.ts'
 import type { AnyGame, Difficulty, Locale } from './types.ts'
 import { usePlaySession, type PlaySessionDeps } from './usePlaySession.ts'
+import { useSpeech } from './useSpeech.ts'
 
 const strings = {
-  cs: { back: 'Zpět', check: 'Zkontrolovat', next: 'Další úloha', correct: 'Správně.', wrong: 'Ještě to nesedí.' },
-  en: { back: 'Back', check: 'Check', next: 'Next task', correct: 'Correct.', wrong: 'Not quite yet.' },
+  cs: { back: 'Zpět', read: 'Přečíst zadání', check: 'Zkontrolovat', next: 'Další úloha', correct: 'Správně.', wrong: 'Ještě to nesedí.' },
+  en: { back: 'Back', read: 'Read the task aloud', check: 'Check', next: 'Next task', correct: 'Correct.', wrong: 'Not quite yet.' },
 } satisfies Record<Locale, Record<string, string>>
 
 export interface PlayScreenProps extends PlaySessionDeps {
@@ -14,11 +16,15 @@ export interface PlayScreenProps extends PlaySessionDeps {
   locale?: Locale
   /** Where the back arrow leads: the game's path, or home. */
   backHref?: string
+  /** Reading aloud; defaults to the browser's, `null` turns it off. */
+  speech?: SpeechPort | null
 }
 
 /** Shared screen for every game: task → check → result → next task. */
-export function PlayScreen({ game, difficulty = 1, locale = 'cs', backHref = '#/', ...deps }: PlayScreenProps) {
+export function PlayScreen({ game, difficulty = 1, locale = 'cs', backHref = '#/', speech, ...deps }: PlayScreenProps) {
   const { state, setAnswer, hint, check, next } = usePlaySession({ game, difficulty, locale }, deps)
+  const { speak } = useSpeech(locale, state.round, speech)
+  const prompt = speak && game.speech ? game.speech(state.task, locale) : ''
   const t = strings[locale]
   const { Renderer } = game
 
@@ -38,6 +44,11 @@ export function PlayScreen({ game, difficulty = 1, locale = 'cs', backHref = '#/
       </header>
 
       <form className="play__form" onSubmit={onSubmit} noValidate>
+        {speak && prompt && (
+          <button className="icon-button play__speak" type="button" aria-label={t.read} onClick={() => speak(prompt)}>
+            <SpeakerIcon className="icon-button__icon" />
+          </button>
+        )}
         <div className="play__task">
           <Renderer
             key={state.round}

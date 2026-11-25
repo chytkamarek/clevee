@@ -14,11 +14,11 @@ import {
   type PieceState,
 } from './board.ts'
 import type { PolyominoAnswer, PolyominoTask } from './puzzle.ts'
+import { polyominoIntro } from './intro.ts'
 import { orient, size, type Cell } from './shapes.ts'
 
 const strings = {
   cs: {
-    intro: 'Přetáhni dílky do tvaru. Ťuknutím dílek otočíš.',
     board: 'Tvar k vyplnění',
     tray: 'Dílky',
     piece: (n: number) => `Dílek ${n}`,
@@ -27,7 +27,6 @@ const strings = {
     back: 'Vrátit',
   },
   en: {
-    intro: 'Drag the pieces into the shape. Tap a piece to turn it.',
     board: 'Shape to fill',
     tray: 'Pieces',
     piece: (n: number) => `Piece ${n}`,
@@ -253,7 +252,7 @@ export function PolyominoRenderer({ task, onAnswer, locked, locale }: RendererPr
 
   return (
     <div ref={rootRef} className={`poly${locked ? ' poly--locked' : ''}`}>
-      <p className="poly__intro">{t.intro}</p>
+      <p className="poly__intro">{polyominoIntro[locale]}</p>
 
       <div
         ref={boardRef}

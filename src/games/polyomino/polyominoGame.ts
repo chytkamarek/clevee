@@ -1,4 +1,5 @@
 import type { Game } from '../core/types.ts'
+import { polyominoIntro } from './intro.ts'
 import { PolyominoIcon } from './PolyominoIcon.tsx'
 import { LEVELS, generatePolyomino, validatePolyomino, type PolyominoAnswer, type PolyominoTask } from './puzzle.ts'
 import { PolyominoRenderer } from './PolyominoRenderer.tsx'
@@ -12,5 +13,6 @@ export const polyominoGame: Game<PolyominoTask, PolyominoAnswer> = {
   levels: LEVELS.length,
   generate: (difficulty, seed) => generatePolyomino(difficulty, seed),
   validate: validatePolyomino,
+  speech: (_task, locale) => polyominoIntro[locale],
   Renderer: PolyominoRenderer,
 }

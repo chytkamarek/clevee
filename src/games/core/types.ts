@@ -41,6 +41,11 @@ export interface Game<Task, Answer> {
   generate(difficulty: Difficulty, seed: number, locale: Locale): Task
   /** Pure: is `answer` a correct solution of `task`? */
   validate(task: Task, answer: Answer): boolean
+  /**
+   * Pure: the task as one short sentence to read aloud in `locale`, for children who do not read yet.
+   * Without it the play screen offers no reading.
+   */
+  speech?(task: Task, locale: Locale): string
   Renderer: ComponentType<RendererProps<Task, Answer>>
 }
 

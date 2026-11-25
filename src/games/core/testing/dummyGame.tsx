@@ -9,6 +9,7 @@ export const dummyGame: Game<{ n: number; difficulty: number }, number> = {
   levels: 3,
   generate: (difficulty, seed) => ({ n: seed, difficulty }),
   validate: (task, answer) => answer === task.n + 1,
+  speech: (task, locale) => (locale === 'cs' ? `Úloha ${task.n}` : `Task ${task.n}`),
   Renderer: ({ task, answer, onAnswer, onHint, locked }) => (
     <div>
       <p>Úloha {task.n}</p>
