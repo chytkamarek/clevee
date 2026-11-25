@@ -1,5 +1,26 @@
 # clevee
 
+## Základní princip: klidná appka
+
+Platí pro celou appku i každou hru, v designu, mechanikách i textech. Vzor je klidné, hřejivé ladění a pomalé tempo dětských seriálů typu Bluey. Bereme z toho náladu, ne postavy, kresbu ani vzhled konkrétního pořadu. Cíl: dítě si hraje a přemýšlí, nehoní odměnu.
+
+- **Barvy:** ztlumení palety je zatím vypnuté (rozhodnuto 2026-11-25), sytější veselé barvy jsou v pořádku. Dál platí: žádné neonové ani blikající barvy, čitelnost textu podle WCAG AA a nové barvy jen jako tokeny v `:root` v `src/index.css`.
+- **Pohyb:** málo a pomalu. Přechody jemné (zhruba 200–400 ms, ease-out), žádné poskakování, třesení, záblesky, konfety, výbuchy částic ani smyčky, které upoutávají pozornost. Respektuj `prefers-reduced-motion`.
+- **Zpětná vazba:** klidná a věcná. Správně = krátké tiché potvrzení. Chyba = laskavá nápověda bez červeného křiku a trestu („zkus to ještě jednou“). Žádné fanfáry, ani při sérii správných odpovědí.
+- **Žádné dopaminové smyčky:** žádné body, hvězdičky, žebříčky, streaky, odměny za denní návrat, loot/náhodné odměny, odpočty času ani tlak na rychlost. Žádné „ještě jedno kolo?“ ani automatické spuštění dalšího kola. Hra má přirozený konec a dovolí v klidu skončit.
+- **Zvuk** (až bude): tichý, měkký, volitelný, ve výchozím stavu ztlumený nebo velmi potichu. Žádné jingly odměn.
+- **Texty:** krátké, vlídné, bez vykřičníků a superlativů.
+
+Při návrhu issue i v review je porušení tohoto principu nález stejné váhy jako bug.
+
+## Design system
+
+Nové obrazovky a hry navrhuj podle [design systému clevee](https://claude.ai/artifact/HJ3r3QituYFAzmUKs8jorx) (barvy, mezery, rohy, písmo, stín, pohyb, komponenty).
+
+- **Zdroj pravdy jsou tokeny v `:root` v `src/index.css`.** Design system se s nimi srovnává, ne naopak: po změně tokenu aktualizuj i design system.
+- Mimo `:root` žádné literální barvy; mezery (`space-*`), rohy (`radius-*`), rozměry (`control-min`, `button-min`, `content-max`), stín (`shadow-card`) a délky přechodů (`duration-calm`) ber z tokenů. Hlídá to `src/design/tokens.test.ts`.
+- Text na `accent` je vždy ve `fg`.
+
 ## Dev workflow
 
 Issue → `/dev-create-issue` → `/dev-start <issue>` → `/dev-ship` → po ~5 PR `/dev-feedback`. Skilly berou příkazy a hranice odsud.

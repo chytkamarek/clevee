@@ -3,6 +3,8 @@
   --fg: #2b2118;
   --accent: #ff8a3d;
   --muted: #6b5a4a;
+  --surface: #ffffff;
+  --result-ok: #1f8a4c;
   /* Polyomino puzzle: muted pastel pieces on a sandy board */
   --board-slot: #efe4cf;
   --board-line: #dccbb0;
@@ -14,6 +16,36 @@
   --piece-6: #cdbf86;
   --piece-edge: rgb(43 33 24 / 0.18);
   --focus: #5b7a8c;
+
+  /* Spacing: space-N = N × 4px */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+
+  --radius-sm: 6px;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+
+  /* Sizes: touch targets for a child's finger, content width */
+  --control-min: 3.5rem;
+  --button-min: 3.5rem;
+  --button-min-width: 14rem;
+  --content-max: 960px;
+  --board-cell-min: 36px;
+  --board-cell-max: 64px;
+
+  /* Hairline drawn as an inset shadow (board grid, piece edge) */
+  --line-thin: 1px;
+
+  --shadow-card: 0 2px 0 rgb(0 0 0 / 0.08);
+  /* Calm motion: 200–400 ms, always ease-out */
+  --duration-calm: 250ms;
+
   color-scheme: light;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
@@ -44,13 +76,13 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: var(--space-4);
   min-height: 100dvh;
-  max-width: 960px;
+  max-width: var(--content-max);
   margin: 0 auto;
-  padding: 2rem 2.5rem;
-  padding-left: max(2.5rem, env(safe-area-inset-left));
-  padding-right: max(2.5rem, env(safe-area-inset-right));
+  padding: var(--space-8) var(--space-10);
+  padding-left: max(var(--space-10), env(safe-area-inset-left));
+  padding-right: max(var(--space-10), env(safe-area-inset-right));
   text-align: center;
 }
 
@@ -69,9 +101,9 @@ body {
 
 @media (max-width: 600px) {
   .home {
-    padding: 1.5rem 1rem;
-    padding-left: max(1rem, env(safe-area-inset-left));
-    padding-right: max(1rem, env(safe-area-inset-right));
+    padding: var(--space-6) var(--space-4);
+    padding-left: max(var(--space-4), env(safe-area-inset-left));
+    padding-right: max(var(--space-4), env(safe-area-inset-right));
   }
 
   .home__title {
@@ -87,7 +119,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 1rem;
+  gap: var(--space-4);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -95,33 +127,33 @@ body {
 
 .home__link {
   display: inline-block;
-  padding: 0.75rem 1.5rem;
-  border-radius: 1rem;
-  background: #fff;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
   color: var(--fg);
   font-size: 1.25rem;
   font-weight: 600;
   text-decoration: none;
-  box-shadow: 0 2px 0 rgb(0 0 0 / 0.08);
+  box-shadow: var(--shadow-card);
 }
 
 /* Shared play screen */
 .play {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--space-6);
   min-height: 100dvh;
-  max-width: 960px;
+  max-width: var(--content-max);
   margin: 0 auto;
-  padding: 1.5rem 2.5rem;
-  padding-left: max(2.5rem, env(safe-area-inset-left));
-  padding-right: max(2.5rem, env(safe-area-inset-right));
+  padding: var(--space-6) var(--space-10);
+  padding-left: max(var(--space-10), env(safe-area-inset-left));
+  padding-right: max(var(--space-10), env(safe-area-inset-right));
 }
 
 .play__header {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--space-4);
   flex-wrap: wrap;
 }
 
@@ -143,7 +175,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.5rem;
+  gap: var(--space-6);
 }
 
 .play__task {
@@ -160,21 +192,24 @@ body {
 }
 
 .play__result--ok {
-  color: #1f8a4c;
+  color: var(--result-ok);
 }
 
+/* A miss is a calm, plain note, never a red alarm */
 .play__result--bad {
-  color: #c0392b;
+  color: var(--muted);
+  font-weight: 400;
 }
 
 .play__button {
-  min-width: 14rem;
-  min-height: 3.5rem;
-  padding: 0.75rem 2rem;
+  min-width: var(--button-min-width);
+  min-height: var(--button-min);
+  padding: var(--space-3) var(--space-8);
   border: 0;
-  border-radius: 1rem;
+  border-radius: var(--radius-lg);
   background: var(--accent);
-  color: #fff;
+  /* Dark text: white on the orange accent is only 2.4:1 */
+  color: var(--fg);
   font: inherit;
   font-size: 1.5rem;
   font-weight: 700;
@@ -191,7 +226,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .demo__equation {
@@ -199,16 +234,16 @@ body {
   align-items: center;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
   font-size: 3rem;
   font-weight: 700;
 }
 
 .demo__input {
   width: 6ch;
-  padding: 0.25rem 0.5rem;
+  padding: var(--space-1) var(--space-2);
   border: 3px solid var(--muted);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-md);
   font: inherit;
   text-align: center;
 }
@@ -229,9 +264,9 @@ body {
 
 @media (max-width: 600px) {
   .play {
-    padding: 1rem;
-    padding-left: max(1rem, env(safe-area-inset-left));
-    padding-right: max(1rem, env(safe-area-inset-right));
+    padding: var(--space-4);
+    padding-left: max(var(--space-4), env(safe-area-inset-left));
+    padding-right: max(var(--space-4), env(safe-area-inset-right));
   }
 
   .play__title {
@@ -250,12 +285,12 @@ body {
 
 /* Polyomino puzzle */
 .poly {
-  --board-cell: clamp(36px, calc((100vw - 4rem) / 8), 64px);
+  --board-cell: clamp(var(--board-cell-min), calc((100vw - 2 * var(--space-8)) / 8), var(--board-cell-max));
   --cell: var(--board-cell);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.25rem;
+  gap: var(--space-5);
   width: 100%;
 }
 
@@ -276,7 +311,7 @@ body {
   width: var(--cell);
   height: var(--cell);
   background: var(--board-slot);
-  box-shadow: inset 0 0 0 1px var(--board-line);
+  box-shadow: inset 0 0 0 var(--line-thin) var(--board-line);
 }
 
 .poly__board > .poly__piece {
@@ -303,14 +338,14 @@ body {
 
 .poly__piece {
   display: block;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   outline: 3px solid transparent;
   outline-offset: 3px;
   touch-action: none;
   cursor: grab;
   transition:
-    outline-color 250ms ease-out,
-    opacity 250ms ease-out;
+    outline-color var(--duration-calm) ease-out,
+    opacity var(--duration-calm) ease-out;
   -webkit-user-select: none;
   user-select: none;
 }
@@ -337,8 +372,8 @@ body {
   position: absolute;
   width: var(--cell);
   height: var(--cell);
-  border-radius: 6px;
-  box-shadow: inset 0 0 0 1px var(--piece-edge);
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 var(--line-thin) var(--piece-edge);
 }
 
 .poly__cell--1 { background: var(--piece-1); }
@@ -358,19 +393,19 @@ body {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .poly__control {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 3.5rem;
-  min-height: 3.5rem;
-  padding: 0.5rem;
+  min-width: var(--control-min);
+  min-height: var(--control-min);
+  padding: var(--space-2);
   border: 2px solid var(--board-line);
-  border-radius: 0.75rem;
-  background: #fff;
+  border-radius: var(--radius-md);
+  background: var(--surface);
   color: var(--fg);
   font: inherit;
   font-size: 1.125rem;
