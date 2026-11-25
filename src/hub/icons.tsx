@@ -69,6 +69,16 @@ export function PlayIcon({ className }: { className?: string }) {
   )
 }
 
+/** Read aloud: a speaker with two sound waves. */
+export function SpeakerIcon({ className }: { className?: string }) {
+  return (
+    <svg {...svg(className)}>
+      <path className="i-ink" d="M8 19 H15 L25 10 V38 L15 29 H8 Z" />
+      <path className="i-stroke i-stroke--bold" d="M31 18 C34 21 34 27 31 30 M36 13 C42 19 42 29 36 35" />
+    </svg>
+  )
+}
+
 /** ← back. */
 export function BackIcon({ className }: { className?: string }) {
   return (

@@ -21,5 +21,6 @@ export const additionGame: Game<AdditionTask, number> = {
     return { a: rng.int(0, max), b: rng.int(0, max) }
   },
   validate: (task, answer) => task.a + task.b === answer,
+  speech: (task, locale) => (locale === 'cs' ? `Kolik je ${task.a} plus ${task.b}?` : `What is ${task.a} plus ${task.b}?`),
   Renderer: AdditionRenderer,
 }
