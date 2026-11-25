@@ -1,0 +1,44 @@
+name: Feature
+description: New feature or enhancement
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What do you want
+      description: Describe the feature. What should happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: where
+    attributes:
+      label: Where will you see it
+      description: Which page, component, or API endpoint? How do you get there?
+      placeholder: "e.g. /settings → click on profile → edit form appears"
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: How will you know it works? Write as a checklist.
+      placeholder: |
+        - [ ] Form validates email format
+        - [ ] Success message appears after save
+        - [ ] Data persists after page reload
+    validations:
+      required: true
+
+  - type: textarea
+    id: edge_cases
+    attributes:
+      label: Edge cases
+      description: What should NOT happen? Special situations?
+      placeholder: |
+        - Empty form — show validation errors
+        - Network error — show retry button
+    validations:
+      required: false

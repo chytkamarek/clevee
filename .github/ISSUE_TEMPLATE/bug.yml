@@ -1,0 +1,49 @@
+name: Bug
+description: Something is broken
+title: "fix: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What is happening
+      description: Describe the bug. What do you see instead of what you expect?
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should happen
+      description: Expected behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: where
+    attributes:
+      label: Where is it happening
+      description: URL, component, endpoint, pipeline step.
+      placeholder: "e.g. POST /api/users → returns 500 when email is missing"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      placeholder: |
+        1. Go to /settings
+        2. Click "Save" without filling any fields
+        3. See 500 error in console
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context / logs
+      description: Error messages, console output, relevant logs.
+      render: shell
+    validations:
+      required: false
