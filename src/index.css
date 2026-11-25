@@ -28,6 +28,15 @@
   --soil: #cfa77d;
   --apple: #e84a4a;
   --blossom: #ffb3c7;
+  /* Places on the home page: a soft ground for the place, a deeper tone for its passed stones */
+  --place-math: #ffe2a3;
+  --place-math-deep: #e2a12c;
+  --place-language: #cfe5f6;
+  --place-language-deep: #5c9fd3;
+  --place-space: #d5ebc9;
+  --place-space-deep: #66ad55;
+  /* Stones not reached yet: quiet, never locked */
+  --stone-ahead: #e9dfcc;
 
   /* Spacing: space-N = N × 4px */
   --space-1: 0.25rem;
@@ -51,6 +60,9 @@
   --board-cell-min: 36px;
   --board-cell-max: 64px;
   --mascot-height: clamp(11rem, 32vh, 18rem);
+  --tile-min: 9rem;
+  --stone-size: 4rem;
+  --path-klicek-height: 6rem;
 
   /* Hairline drawn as an inset shadow (board grid, piece edge) */
   --line-thin: 1px;
@@ -83,6 +95,77 @@ body {
 
 #root {
   min-height: 100dvh;
+}
+
+/* Screen readers only */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Each screen (home, path, game) fades in once when it opens */
+.screen {
+  animation: screen-in var(--duration-calm) ease-out;
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen {
+    animation: none;
+  }
+}
+
+/* Small pictures (place, game tile, buttons): colours from tokens */
+.i-ink { fill: var(--fg); }
+.i-paper { fill: var(--surface); }
+.i-piece-1 { fill: var(--piece-1); }
+.i-piece-2 { fill: var(--piece-2); }
+.i-piece-3 { fill: var(--piece-3); }
+
+.i-line,
+.i-stroke {
+  stroke: var(--fg);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.i-stroke { fill: none; }
+.i-stroke--bold { stroke-width: 4; }
+
+/* Round icon-only link (back, home) */
+.icon-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-min);
+  height: var(--control-min);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.icon-button__icon {
+  width: 2rem;
+  height: 2rem;
+}
+
+.icon-button:focus-visible,
+.tile:focus-visible,
+.stone:focus-visible,
+.path__play:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
 }
 
 /* Tablet-first: base layout targets ~768–1024 px, narrows below 600 px */
@@ -184,14 +267,198 @@ body {
   }
 }
 
-.home__games {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+/* Places on the home page: three side by side on a tablet, stacked on a phone */
+.places {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
   gap: var(--space-4);
+  width: 100%;
+}
+
+.place--math,
+.path--math {
+  --place: var(--place-math);
+  --place-deep: var(--place-math-deep);
+}
+
+.place--language,
+.path--language {
+  --place: var(--place-language);
+  --place-deep: var(--place-language-deep);
+}
+
+.place--space,
+.path--space {
+  --place: var(--place-space);
+  --place-deep: var(--place-space-deep);
+}
+
+.place {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--place);
+  text-align: left;
+}
+
+.place__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.place__icon {
+  width: 3rem;
+  height: 3rem;
+  flex: none;
+}
+
+/* For the parent: small, quiet */
+.place__caption,
+.tile__caption {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.place__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--tile-min), 1fr));
+  gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: max(var(--button-min), var(--tile-min));
+  height: 100%;
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  text-decoration: none;
+}
+
+.tile__icon {
+  width: 5rem;
+  height: 5rem;
+}
+
+.place__empty {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tile-min);
+}
+
+.place__sleeper {
+  width: 4.5rem;
+  height: 4.5rem;
+}
+
+/* A game's path of stones */
+.path {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  min-height: 100dvh;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-10);
+  padding-left: max(var(--space-10), env(safe-area-inset-left));
+  padding-right: max(var(--space-10), env(safe-area-inset-right));
+}
+
+.path__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.path__game-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  flex: none;
+}
+
+.path__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.path__stones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+  gap: var(--space-4);
+  width: 100%;
+  margin: 0;
+  padding: var(--space-6) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--place);
+  list-style: none;
+}
+
+.path__spot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: calc(var(--path-klicek-height) + var(--stone-size));
+}
+
+.path__klicek {
+  height: var(--path-klicek-height);
+  width: auto;
+}
+
+.stone {
+  display: block;
+  width: var(--stone-size);
+  height: var(--stone-size);
+  border-radius: 50%;
+}
+
+.stone--passed {
+  background: var(--place-deep);
+  box-shadow: var(--shadow-card);
+}
+
+.stone--ahead {
+  background: var(--stone-ahead);
+}
+
+/* Where Klíček stands: a quiet ring, no motion */
+.stone--current {
+  box-shadow:
+    0 0 0 var(--space-1) var(--surface),
+    0 0 0 var(--space-2) var(--focus);
+}
+
+.path__play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.path__play-icon {
+  width: 2.5rem;
+  height: 2.5rem;
 }
 
 .home__link {
@@ -224,12 +491,6 @@ body {
   align-items: center;
   gap: var(--space-4);
   flex-wrap: wrap;
-}
-
-.play__home {
-  color: var(--muted);
-  font-size: 1.125rem;
-  text-decoration: none;
 }
 
 .play__title {
@@ -340,6 +601,12 @@ body {
 
   .play__title {
     font-size: 1.5rem;
+  }
+
+  .path {
+    padding: var(--space-4);
+    padding-left: max(var(--space-4), env(safe-area-inset-left));
+    padding-right: max(var(--space-4), env(safe-area-inset-right));
   }
 
   .demo__equation {

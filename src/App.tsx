@@ -3,10 +3,12 @@ import { browserStorage } from './games/core/attempts.ts'
 import { PlayScreen } from './games/core/PlayScreen.tsx'
 import type { GameRegistry } from './games/core/registry.ts'
 import { games as appGames } from './games/registry.ts'
+import { GamePath } from './hub/GamePath.tsx'
+import { Places } from './hub/Home.tsx'
 import { stageFor } from './klicek/growth.ts'
 import { Klicek } from './klicek/Klicek.tsx'
 import { markSeen, syncGrowth } from './klicek/progress.ts'
-import { parseRoute, playHref } from './route.ts'
+import { parseRoute, pathHref, type Route } from './route.ts'
 
 function useHash() {
   const [hash, setHash] = useState(() => window.location.hash)
@@ -25,41 +27,43 @@ function HomeMascot() {
   return <Klicek from={stageFor(growth.seen)} to={stageFor(growth.solved)} />
 }
 
-export default function App({ games = appGames }: { games?: GameRegistry }) {
-  const route = parseRoute(useHash())
-
-  if (route.name === 'play') {
+function Screen({ route, games }: { route: Route; games: GameRegistry }) {
+  if (route.name !== 'home') {
     const game = games.get(route.gameId)
-    if (game) return <PlayScreen key={game.id} game={game} />
-    return (
-      <main className="home">
-        <h1 className="home__title">clevee</h1>
-        <p className="home__lead">Tuhle hru neznám.</p>
-        <a className="home__link" href="#/">
-          Zpět domů
-        </a>
-      </main>
-    )
+    if (!game) {
+      return (
+        <main className="home">
+          <h1 className="home__title">clevee</h1>
+          <p className="home__lead">Tuhle hru neznám.</p>
+          <a className="home__link" href="#/">
+            Zpět domů
+          </a>
+        </main>
+      )
+    }
+    if (route.name === 'path') return <GamePath game={game} />
+    const level = Math.min(route.level, game.levels)
+    return <PlayScreen key={`${game.id}/${level}`} game={game} difficulty={level} backHref={pathHref(game.id)} />
   }
 
-  const list = games.list()
   return (
     <main className="home">
-      <h1 className="home__title">clevee</h1>
+      <h1 className="visually-hidden">clevee</h1>
       <HomeMascot />
-      {list.length === 0 ? (
-        <p className="home__lead">Tady brzy budou hry.</p>
-      ) : (
-        <ul className="home__games">
-          {list.map((g) => (
-            <li key={g.id}>
-              <a className="home__link" href={playHref(g.id)}>
-                {g.title.cs}
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
+      <Places games={games.list()} />
     </main>
+  )
+}
+
+const screenKey = (route: Route) =>
+  route.name === 'home' ? 'home' : route.name === 'path' ? `path/${route.gameId}` : `play/${route.gameId}/${route.level}`
+
+export default function App({ games = appGames }: { games?: GameRegistry }) {
+  const route = parseRoute(useHash())
+  // New key per screen → the screen mounts fresh and fades in once (CSS, off under reduced motion)
+  return (
+    <div className="screen" key={screenKey(route)}>
+      <Screen route={route} games={games} />
+    </div>
   )
 }

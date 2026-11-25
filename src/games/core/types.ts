@@ -2,6 +2,12 @@ import type { ComponentType } from 'react'
 
 export type Locale = 'cs' | 'en'
 
+/** Place in the child's world where a game lives on the home page. */
+export type GameModule = 'math' | 'language' | 'space'
+
+/** Picture of a game on its home tile; draws in the tile's colours, decorative only. */
+export type GameIcon = ComponentType<{ className?: string }>
+
 /** Difficulty level, integer from 1 (easiest) upward. Each game decides how far it goes. */
 export type Difficulty = number
 
@@ -25,6 +31,12 @@ export interface Game<Task, Answer> {
   /** Stable id, used in URLs and stored attempts. Never rename once released. */
   id: string
   title: Record<Locale, string>
+  /** Place on the home page. */
+  module: GameModule
+  /** Picture on the game's tile. */
+  icon: GameIcon
+  /** How many levels (stones on the game's path) it supports, from difficulty 1 upward. */
+  levels: number
   /** Pure: same (difficulty, seed, locale) → same task. Use `createRng(seed)` for randomness. */
   generate(difficulty: Difficulty, seed: number, locale: Locale): Task
   /** Pure: is `answer` a correct solution of `task`? */
