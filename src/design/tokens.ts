@@ -16,7 +16,7 @@ export function outsideRoot(css: string): string {
 export function rootTokens(css: string): Record<string, string> {
   const tokens: Record<string, string> = {}
   for (const m of rootBlock(css).matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)) {
-    tokens[m[1]] = m[2].trim()
+    tokens[m[1] ?? ''] = (m[2] ?? '').trim()
   }
   return tokens
 }
@@ -27,18 +27,19 @@ export function ruleDeclarations(css: string, selector: string): Record<string, 
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const body = new RegExp(`(?:^|[}\\s])${escaped}\\s*\\{([^}]*)\\}`).exec(clean)?.[1] ?? ''
   const decls: Record<string, string> = {}
-  for (const m of body.matchAll(/([\w-]+)\s*:\s*([^;]+);/g)) decls[m[1]] = m[2].trim()
+  for (const m of body.matchAll(/([\w-]+)\s*:\s*([^;]+);/g)) decls[m[1] ?? ''] = (m[2] ?? '').trim()
   return decls
 }
 
 /** Follows `var(--name)` through the tokens until it reaches a literal value. */
-export function resolveValue(value: string, tokens: Record<string, string>): string {
+export function resolveValue(value: string | undefined, tokens: Record<string, string>): string {
+  if (value === undefined) throw new Error('No value to resolve')
   let current = value.trim()
   for (let i = 0; i < 10; i++) {
-    const m = /^var\(--([\w-]+)\)$/.exec(current)
-    if (!m) return current
-    const next = tokens[m[1]]
-    if (next === undefined) throw new Error(`Unknown token --${m[1]}`)
+    const name = /^var\(--([\w-]+)\)$/.exec(current)?.[1]
+    if (name === undefined) return current
+    const next = tokens[name]
+    if (next === undefined) throw new Error(`Unknown token --${name}`)
     current = next.trim()
   }
   throw new Error(`Token chain too deep: ${value}`)
@@ -46,19 +47,20 @@ export function resolveValue(value: string, tokens: Record<string, string>): str
 
 /** WCAG 2 contrast ratio between two 3- or 6-digit hex colours. */
 export function contrastRatio(a: string, b: string): number {
-  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x)
-  return (hi + 0.05) / (lo + 0.05)
+  const [la, lb] = [luminance(a), luminance(b)]
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
 }
 
 function luminance(hex: string): number {
   const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex.trim())
-  if (!m) throw new Error(`Not a hex colour: ${hex}`)
-  const full = m[1].length === 3 ? [...m[1]].map((c) => c + c).join('') : m[1]
-  const [r, g, b] = [0, 2, 4].map((i) => {
+  const digits = m?.[1]
+  if (!digits) throw new Error(`Not a hex colour: ${hex}`)
+  const full = digits.length === 3 ? [...digits].map((c) => c + c).join('') : digits
+  const channel = (i: number) => {
     const c = parseInt(full.slice(i, i + 2), 16) / 255
     return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
-  })
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+  return 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4)
 }
 
 function stripComments(css: string): string {

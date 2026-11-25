@@ -3,8 +3,8 @@ import type { AnyGame, Difficulty, Locale } from './types.ts'
 import { usePlaySession, type PlaySessionDeps } from './usePlaySession.ts'
 
 const strings = {
-  cs: { home: 'Domů', check: 'Zkontrolovat', next: 'Další úloha', correct: 'Správně!', wrong: 'Špatně.' },
-  en: { home: 'Home', check: 'Check', next: 'Next task', correct: 'Correct!', wrong: 'Not quite.' },
+  cs: { home: 'Domů', check: 'Zkontrolovat', next: 'Další úloha', correct: 'Správně.', wrong: 'Ještě to nesedí.' },
+  en: { home: 'Home', check: 'Check', next: 'Next task', correct: 'Correct.', wrong: 'Not quite yet.' },
 } satisfies Record<Locale, Record<string, string>>
 
 export interface PlayScreenProps extends PlaySessionDeps {
