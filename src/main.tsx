@@ -11,3 +11,4 @@ createRoot(root).render(
     <App />
   </StrictMode>,
 )
+export function f() { const unused = 1 }

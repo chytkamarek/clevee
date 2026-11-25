@@ -5,6 +5,6 @@ import App from './App.tsx'
 describe('App', () => {
   it('shows the home page heading', () => {
     render(<App />)
-    expect(screen.getByRole('heading', { level: 1, name: 'clevee' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'NOPE' })).toBeInTheDocument()
   })
 })
