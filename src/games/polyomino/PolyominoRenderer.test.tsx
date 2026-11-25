@@ -143,4 +143,13 @@ describe('PolyominoRenderer', () => {
     const shape = screen.getByRole('button', { name: 'Dílek 1' }).querySelector('.poly__shape') as HTMLElement
     expect(shape.style.width).toBe('calc(2 * var(--cell))')
   })
+
+  it('controls are pictures without words — the youngest players do not read', () => {
+    play({ ...strip, allowMirror: true })
+    for (const name of ['Otočit', 'Překlopit', 'Vrátit']) {
+      const button = screen.getByRole('button', { name })
+      expect(button.textContent?.trim()).toBe('')
+      expect(button.querySelector('svg')).not.toBeNull()
+    }
+  })
 })

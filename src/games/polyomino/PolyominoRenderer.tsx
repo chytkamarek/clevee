@@ -60,6 +60,54 @@ interface Drag {
   moved: boolean
 }
 
+/**
+ * Controls are pictures, not words: the youngest players (2–6) do not read yet.
+ * Words stay in aria-label / title for screen readers and parents.
+ */
+const ICONS = {
+  // Arrow curving clockwise
+  rotate: (
+    <>
+      <path d="M19 12a7 7 0 1 1-2.05-4.95" />
+      <path d="M19 4v4.5h-4.5" />
+    </>
+  ),
+  // Shape and its mirror image across a dashed line
+  mirror: (
+    <>
+      <path d="M12 3v18" strokeDasharray="2 2.5" />
+      <path d="M9 7 3.5 17H9z" />
+      <path d="M15 7l5.5 10H15z" />
+    </>
+  ),
+  // Arrow down into the tray below
+  back: (
+    <>
+      <path d="M12 4v11" />
+      <path d="m7 10.5 5 5 5-5" />
+      <path d="M5 20h14" />
+    </>
+  ),
+}
+
+function Icon({ name }: { name: keyof typeof ICONS }) {
+  return (
+    <svg
+      className="poly__icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {ICONS[name]}
+    </svg>
+  )
+}
+
 const cellStyle = (cell: Cell): CSSProperties => ({
   left: `calc(${cell.c} * var(--cell))`,
   top: `calc(${cell.r} * var(--cell))`,
@@ -232,8 +280,10 @@ export function PolyominoRenderer({ task, onAnswer, locked, locale }: RendererPr
           className="poly__control"
           disabled={locked || !selectedPiece}
           onClick={() => selectedPiece && commit(rotatePiece(task, board, selectedPiece.id))}
+          aria-label={t.rotate}
+          title={t.rotate}
         >
-          ↻ {t.rotate}
+          <Icon name="rotate" />
         </button>
         {task.allowMirror && (
           <button
@@ -241,8 +291,10 @@ export function PolyominoRenderer({ task, onAnswer, locked, locale }: RendererPr
             className="poly__control"
             disabled={locked || !selectedPiece}
             onClick={() => selectedPiece && commit(mirrorPiece(task, board, selectedPiece.id))}
+            aria-label={t.mirror}
+            title={t.mirror}
           >
-            ⇋ {t.mirror}
+            <Icon name="mirror" />
           </button>
         )}
         <button
@@ -250,8 +302,10 @@ export function PolyominoRenderer({ task, onAnswer, locked, locale }: RendererPr
           className="poly__control"
           disabled={locked || !selectedPiece?.at}
           onClick={() => selectedPiece && commit(toTray(board, selectedPiece.id))}
+          aria-label={t.back}
+          title={t.back}
         >
-          {t.back}
+          <Icon name="back" />
         </button>
       </div>
 
