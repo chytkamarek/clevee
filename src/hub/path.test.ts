@@ -26,8 +26,8 @@ describe('pathFor', () => {
   })
 
   it('wrong answers do not count, hints do not matter', () => {
-    const history = [...tries(5, 1, { correct: false }), ...tries(2, 1), ...tries(1, 1, { hints: 3 })]
-    expect(view(pathFor('g', 3, history))).toBe('1P 2-* 3-')
+    expect(view(pathFor('g', 3, [...tries(5, 1, { correct: false }), ...tries(2, 1)]))).toBe('1-* 2- 3-')
+    expect(view(pathFor('g', 3, [...tries(2, 1), ...tries(1, 1, { hints: 3 })]))).toBe('1P 2-* 3-')
   })
 
   it('all passed: Klíček stays on the last stone', () => {
