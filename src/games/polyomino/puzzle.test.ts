@@ -65,6 +65,7 @@ describe('validatePolyomino', () => {
     expect(validatePolyomino(task, [a, { ...b, pieceId: 0 }])).toBe(false)
     expect(validatePolyomino(task, [a, { ...b, pieceId: 7 }])).toBe(false)
     expect(validatePolyomino(task, [a, { ...b, rotation: 6 }])).toBe(false)
+    expect(validatePolyomino(task, [a, null as never])).toBe(false)
   })
 
   it('rejects mirroring where the level does not allow it, accepts it where it does', () => {

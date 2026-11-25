@@ -46,6 +46,26 @@ export function placePiece(task: PolyominoTask, board: BoardState, id: number, r
   return update(board, id, { at: canPlace(task, board, id, { ...piece, row, col }) ? { row, col } : null })
 }
 
+/** First position (row by row) where the piece fits as it is turned now — for placing from the keyboard. */
+export function firstFit(task: PolyominoTask, board: BoardState, id: number): { row: number; col: number } | null {
+  const piece = board.find((p) => p.id === id)
+  if (!piece) return null
+  for (let row = 0; row < task.rows; row++) {
+    for (let col = 0; col < task.cols; col++) {
+      if (canPlace(task, board, id, { ...piece, row, col })) return { row, col }
+    }
+  }
+  return null
+}
+
+/** Shifts a placed piece by one step; a move that does not fit is ignored (the piece stays). */
+export function movePiece(task: PolyominoTask, board: BoardState, id: number, dRow: number, dCol: number): BoardState {
+  const piece = board.find((p) => p.id === id)
+  if (!piece?.at) return board
+  const at = { row: piece.at.row + dRow, col: piece.at.col + dCol }
+  return canPlace(task, board, id, { ...piece, ...at }) ? update(board, id, { at }) : board
+}
+
 export const toTray = (board: BoardState, id: number) => update(board, id, { at: null })
 
 /** New orientation; a piece on the board keeps its top-left corner, or goes to the tray when it no longer fits. */

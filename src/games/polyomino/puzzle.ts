@@ -172,6 +172,7 @@ export function validatePolyomino(task: PolyominoTask, answer: PolyominoAnswer):
   const seen = new Set<number>()
 
   for (const p of answer) {
+    if (typeof p !== 'object' || p === null) return false
     const piece = task.pieces.find((x) => x.id === p.pieceId)
     if (!piece || seen.has(p.pieceId)) return false
     seen.add(p.pieceId)

@@ -1,8 +1,10 @@
-import { useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react'
 import type { Locale, RendererProps } from '../core/types.ts'
 import {
+  firstFit,
   initialBoard,
   mirrorPiece,
+  movePiece,
   placePiece,
   rotatePiece,
   snapToCell,
@@ -35,15 +37,22 @@ const strings = {
   },
 } satisfies Record<Locale, unknown>
 
-/** Movement under this many px is a tap, not a drag. */
-const TAP_PX = 8
+/** Movement under this many px is a tap, not a drag — small fingers wobble. */
+const TAP_PX = 12
+
+const ARROWS: Record<string, [number, number]> = {
+  ArrowUp: [-1, 0],
+  ArrowDown: [1, 0],
+  ArrowLeft: [0, -1],
+  ArrowRight: [0, 1],
+}
 
 interface Drag {
   id: number
   pointerId: number
   startX: number
   startY: number
-  /** Pointer position inside the piece, so it does not jump to the finger. */
+  /** Grab point inside the piece in board px (tray pieces are smaller), so it does not jump to the finger. */
   offsetX: number
   offsetY: number
   x: number
@@ -75,7 +84,23 @@ export function PolyominoRenderer({ task, onAnswer, locked, locale }: RendererPr
   const [board, setBoard] = useState<BoardState>(() => initialBoard(task))
   const [selected, setSelected] = useState<number | null>(null)
   const [drag, setDrag] = useState<Drag | null>(null)
+  // Pointer events can outrun re-renders; handlers read the live drag from here
+  const dragRef = useRef<Drag | null>(null)
   const boardRef = useRef<HTMLDivElement>(null)
+  const rootRef = useRef<HTMLDivElement>(null)
+  // A piece moving between tray and board is a new element; keep keyboard focus on it
+  const focusRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (focusRef.current === null) return
+    rootRef.current?.querySelector<HTMLElement>(`[data-piece="${focusRef.current}"]`)?.focus()
+    focusRef.current = null
+  })
+
+  const startDrag = (next: Drag | null) => {
+    dragRef.current = next
+    setDrag(next)
+  }
 
   const commit = (next: BoardState) => {
     setBoard(next)
@@ -86,18 +111,23 @@ export function PolyominoRenderer({ task, onAnswer, locked, locale }: RendererPr
   const colorOf = (id: number) => (id % 6) + 1
   const number = (id: number) => task.pieces.findIndex((x) => x.id === id) + 1
 
-  const onPointerDown = (e: PointerEvent<HTMLElement>, id: number) => {
-    if (locked || drag || !e.isPrimary) return
+  const onPointerDown = (e: PointerEvent<HTMLElement>, p: PieceState) => {
+    if (locked || dragRef.current || !e.isPrimary) return
     e.preventDefault()
     e.currentTarget.setPointerCapture?.(e.pointerId)
     const rect = e.currentTarget.getBoundingClientRect()
-    setDrag({
+    const boardRect = boardRef.current?.getBoundingClientRect()
+    const boardCell = boardRect ? boardRect.width / task.cols : 0
+    const ownCell = rect.width / Math.max(1, size(cellsOf(p)).cols)
+    const scale = boardCell > 0 && ownCell > 0 ? boardCell / ownCell : 1
+    const id = p.id
+    startDrag({
       id,
       pointerId: e.pointerId,
       startX: e.clientX,
       startY: e.clientY,
-      offsetX: e.clientX - rect.left,
-      offsetY: e.clientY - rect.top,
+      offsetX: (e.clientX - rect.left) * scale,
+      offsetY: (e.clientY - rect.top) * scale,
       x: e.clientX,
       y: e.clientY,
       moved: false,
@@ -105,14 +135,16 @@ export function PolyominoRenderer({ task, onAnswer, locked, locale }: RendererPr
   }
 
   const onPointerMove = (e: PointerEvent<HTMLElement>) => {
+    const drag = dragRef.current
     if (!drag || e.pointerId !== drag.pointerId) return
     const moved = drag.moved || Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > TAP_PX
-    setDrag({ ...drag, x: e.clientX, y: e.clientY, moved })
+    startDrag({ ...drag, x: e.clientX, y: e.clientY, moved })
   }
 
   const onPointerUp = (e: PointerEvent<HTMLElement>) => {
+    const drag = dragRef.current
     if (!drag || e.pointerId !== drag.pointerId) return
-    setDrag(null)
+    startDrag(null)
     setSelected(drag.id)
     if (!drag.moved) {
       commit(rotatePiece(task, board, drag.id))
@@ -126,10 +158,30 @@ export function PolyominoRenderer({ task, onAnswer, locked, locale }: RendererPr
     commit(placePiece(task, board, drag.id, at.row, at.col))
   }
 
+  /** Enter/Space: select, and lay a tray piece on the first free spot · arrows: move · R: turn. */
   const onKeyDown = (e: KeyboardEvent<HTMLElement>, id: number) => {
-    if (locked || (e.key !== 'Enter' && e.key !== ' ')) return
-    e.preventDefault()
-    setSelected(id)
+    if (locked) return
+    const piece = board.find((p) => p.id === id)
+    if (!piece) return
+    const arrow = ARROWS[e.key]
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      setSelected(id)
+      const at = piece.at ? null : firstFit(task, board, id)
+      if (at) {
+        focusRef.current = id
+        commit(placePiece(task, board, id, at.row, at.col))
+      }
+    } else if (arrow && piece.at) {
+      e.preventDefault()
+      setSelected(id)
+      commit(movePiece(task, board, id, arrow[0], arrow[1]))
+    } else if (e.key === 'r' || e.key === 'R') {
+      e.preventDefault()
+      setSelected(id)
+      focusRef.current = id
+      commit(rotatePiece(task, board, id))
+    }
   }
 
   const pieceProps = (p: PieceState) => ({
@@ -138,11 +190,13 @@ export function PolyominoRenderer({ task, onAnswer, locked, locale }: RendererPr
     'aria-label': t.piece(number(p.id)),
     'aria-pressed': selected === p.id,
     'aria-disabled': locked || undefined,
+    'aria-keyshortcuts': 'Enter ArrowUp ArrowDown ArrowLeft ArrowRight R',
+    'data-piece': p.id,
     className: `poly__piece${selected === p.id ? ' poly__piece--selected' : ''}${drag?.id === p.id && drag.moved ? ' poly__piece--lifted' : ''}`,
-    onPointerDown: (e: PointerEvent<HTMLElement>) => onPointerDown(e, p.id),
+    onPointerDown: (e: PointerEvent<HTMLElement>) => onPointerDown(e, p),
     onPointerMove,
     onPointerUp,
-    onPointerCancel: () => setDrag(null),
+    onPointerCancel: () => startDrag(null),
     onKeyDown: (e: KeyboardEvent<HTMLElement>) => onKeyDown(e, p.id),
   })
 
@@ -150,7 +204,7 @@ export function PolyominoRenderer({ task, onAnswer, locked, locale }: RendererPr
   const dragged = drag?.moved ? board.find((p) => p.id === drag.id) : undefined
 
   return (
-    <div className={`poly${locked ? ' poly--locked' : ''}`}>
+    <div ref={rootRef} className={`poly${locked ? ' poly--locked' : ''}`}>
       <p className="poly__intro">{t.intro}</p>
 
       <div
@@ -202,13 +256,20 @@ export function PolyominoRenderer({ task, onAnswer, locked, locale }: RendererPr
       </div>
 
       <div className="poly__tray" role="group" aria-label={t.tray}>
-        {board.map((p) =>
-          p.at ? null : (
-            <span key={p.id} {...pieceProps(p)}>
-              <PieceShape cells={cellsOf(p)} color={colorOf(p.id)} />
+        {/* Each piece has a fixed square spot, so the tray does not shift when pieces turn or leave */}
+        {board.map((p) => {
+          const box = size(task.pieces.find((x) => x.id === p.id)?.cells ?? [])
+          const side = `calc(${Math.max(box.rows, box.cols)} * var(--cell))`
+          return (
+            <span key={p.id} className="poly__spot" style={{ width: side, height: side }}>
+              {!p.at && (
+                <span {...pieceProps(p)}>
+                  <PieceShape cells={cellsOf(p)} color={colorOf(p.id)} />
+                </span>
+              )}
             </span>
-          ),
-        )}
+          )
+        })}
       </div>
 
       {dragged && drag && (

@@ -112,4 +112,35 @@ describe('PolyominoRenderer', () => {
     play({ ...strip, allowMirror: true })
     expect(screen.getByRole('button', { name: /Překlopit/ })).toBeInTheDocument()
   })
+
+  it('can be finished from the keyboard: Enter lays a piece, arrows move it', () => {
+    play(strip)
+    const one = screen.getByRole('button', { name: 'Dílek 1' })
+    one.focus()
+    fireEvent.keyDown(one, { key: 'Enter' }) // first free spot: cells 0–1
+    const board = screen.getByRole('group', { name: 'Tvar k vyplnění' })
+    expect(board).toContainElement(screen.getByRole('button', { name: 'Dílek 1' }))
+    expect(screen.getByRole('button', { name: 'Dílek 1' })).toHaveFocus()
+
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Dílek 1' }), { key: 'ArrowRight' }) // cells 1–2
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Dílek 1' }), { key: 'ArrowRight' }) // cells 2–3
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Dílek 2' }), { key: 'Enter' }) // cells 0–1
+    expect(board).toContainElement(screen.getByRole('button', { name: 'Dílek 2' }))
+    expect(screen.getByRole('button', { name: 'Zkontrolovat' })).toBeEnabled()
+  })
+
+  it('after checking, pieces cannot be dragged or turned', () => {
+    fakeLayout()
+    play(strip)
+    dragTo('Dílek 1', 0)
+    dragTo('Dílek 2', 2)
+    fireEvent.click(screen.getByRole('button', { name: 'Zkontrolovat' }))
+    dragTo('Dílek 2', 1)
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Dílek 1' }), { key: 'r' })
+    const board = screen.getByRole('group', { name: 'Tvar k vyplnění' })
+    expect(board).toContainElement(screen.getByRole('button', { name: 'Dílek 2' }))
+    expect(screen.getByRole('button', { name: /Otočit/ })).toBeDisabled()
+    const shape = screen.getByRole('button', { name: 'Dílek 1' }).querySelector('.poly__shape') as HTMLElement
+    expect(shape.style.width).toBe('calc(2 * var(--cell))')
+  })
 })

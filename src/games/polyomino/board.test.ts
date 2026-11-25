@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { snapToCell, initialBoard, mirrorPiece, placePiece, rotatePiece, toAnswer, toTray } from './board.ts'
+import { firstFit, initialBoard, mirrorPiece, movePiece, placePiece, rotatePiece, snapToCell, toAnswer, toTray } from './board.ts'
 import { validatePolyomino, type PolyominoTask } from './puzzle.ts'
 import type { Cell } from './shapes.ts'
 
@@ -87,5 +87,26 @@ describe('board', () => {
     expect(snapToCell(115, 30, { left: 100, top: 10 }, 32)).toEqual({ row: 1, col: 0 })
     expect(snapToCell(117, 25, { left: 100, top: 10 }, 32)).toEqual({ row: 0, col: 1 })
     expect(snapToCell(60, 10, { left: 100, top: 10 }, 32)).toEqual({ row: 0, col: -1 })
+  })
+})
+
+describe('board from the keyboard', () => {
+  it('first fit places row by row onto free cells, or nowhere when the piece fits nowhere', () => {
+    let board = initialBoard(task)
+    expect(firstFit(task, board, 0)).toEqual({ row: 0, col: 0 })
+    board = placePiece(task, board, 0, 0, 0)
+    expect(firstFit(task, board, 1)).toBeNull() // rotation 0 does not fit beside it
+    board = rotatePiece(task, rotatePiece(task, board, 1), 1)
+    expect(firstFit(task, board, 1)).toEqual({ row: 0, col: 1 })
+  })
+
+  it('moves a placed piece by a step only where it fits', () => {
+    const domino: PolyominoTask = { ...task, pieces: [{ id: 0, cells: cells([0, 0], [0, 1]) }] }
+    let board = placePiece(domino, initialBoard(domino), 0, 0, 0)
+    board = movePiece(domino, board, 0, 0, 1)
+    expect(board[0]!.at).toEqual({ row: 0, col: 1 })
+    expect(movePiece(domino, board, 0, 0, 1)).toBe(board) // would stick out
+    expect(movePiece(domino, board, 0, 1, 0)[0]!.at).toEqual({ row: 1, col: 1 })
+    expect(movePiece(domino, initialBoard(domino), 0, 1, 0)).toEqual(initialBoard(domino)) // in the tray
   })
 })
