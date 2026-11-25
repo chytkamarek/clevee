@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { syncGrowth } from '../../klicek/progress.ts'
 import { browserStorage, saveAttempt, type AttemptStorage } from './attempts.ts'
 import { randomSeed } from './rng.ts'
 import { sessionReducer, startSession, type SessionAction, type SessionConfig } from './session.ts'
@@ -9,7 +10,7 @@ export interface PlaySessionDeps {
   storage?: AttemptStorage | null
 }
 
-/** React binding of the session state machine; saves each checked answer to history. */
+/** React binding of the session state machine; saves each checked answer to history and grows Klíček. */
 export function usePlaySession(config: SessionConfig, deps: PlaySessionDeps = {}) {
   const now = deps.now ?? Date.now
   const nextSeed = deps.nextSeed ?? randomSeed
@@ -24,6 +25,7 @@ export function usePlaySession(config: SessionConfig, deps: PlaySessionDeps = {}
     setState(next)
     if (state.phase === 'answering' && next.phase === 'result' && storage) {
       saveAttempt(storage, next.attempt)
+      syncGrowth(storage)
     }
   }
 

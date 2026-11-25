@@ -62,4 +62,31 @@ describe('src/index.css follows the design system', () => {
     expect(bad.color).toBe('var(--muted)')
     expect(bad['font-weight']).toBe('400')
   })
+
+  it('draws Klíček in the mascot colours from the design system', () => {
+    expect(tokens).toMatchObject({
+      'klicek-yellow': '#ffc93c',
+      'klicek-cheek': '#ffa07a',
+      leaf: '#58c26a',
+      'leaf-deep': '#4fb35f',
+      'leaf-shade': '#3fa352',
+      stem: '#3f9b4b',
+      'root-gold': '#e8b23e',
+      bark: '#9b6a43',
+      soil: '#cfa77d',
+      apple: '#e84a4a',
+      blossom: '#ffb3c7',
+    })
+  })
+
+  it('Klíček grows with one slow ease-out fade, and none under reduced motion', () => {
+    const layer = ruleDeclarations(css, '.klicek__layer')
+    expect(layer.transition).toMatch(/^opacity var\(--duration-grow\) ease-out$/)
+    expect(layer.animation).toBeUndefined()
+    const reduced = /@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/g
+    const blocks = [...rest.matchAll(reduced)].map((m) => m[1] ?? '').join('\n')
+    expect(blocks).toMatch(/\.klicek__layer,\s*\.klicek__layer--after\s*\{\s*transition: none;/)
+    // Fade-through: the new drawing starts only after the old one is gone
+    expect(ruleDeclarations(css, '.klicek__layer--after')['transition-delay']).toBe('var(--duration-grow)')
+  })
 })

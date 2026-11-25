@@ -16,6 +16,18 @@
   --piece-6: #cdbf86;
   --piece-edge: rgb(43 33 24 / 0.18);
   --focus: #5b7a8c;
+  /* Klíček, the mascot: only for its drawing, never for controls; apple is fruit, never an error */
+  --klicek-yellow: #ffc93c;
+  --klicek-cheek: #ffa07a;
+  --leaf: #58c26a;
+  --leaf-deep: #4fb35f;
+  --leaf-shade: #3fa352;
+  --stem: #3f9b4b;
+  --root-gold: #e8b23e;
+  --bark: #9b6a43;
+  --soil: #cfa77d;
+  --apple: #e84a4a;
+  --blossom: #ffb3c7;
 
   /* Spacing: space-N = N × 4px */
   --space-1: 0.25rem;
@@ -38,6 +50,7 @@
   --content-max: 960px;
   --board-cell-min: 36px;
   --board-cell-max: 64px;
+  --mascot-height: clamp(11rem, 32vh, 18rem);
 
   /* Hairline drawn as an inset shadow (board grid, piece edge) */
   --line-thin: 1px;
@@ -45,6 +58,8 @@
   --shadow-card: 0 2px 0 rgb(0 0 0 / 0.08);
   /* Calm motion: 200–400 ms, always ease-out */
   --duration-calm: 250ms;
+  /* Klíček's slow change into its next stage: old fades out, then new fades in; once, never a loop */
+  --duration-grow: 800ms;
 
   color-scheme: light;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -97,6 +112,60 @@ body {
   margin: 0;
   font-size: 1.5rem;
   color: var(--muted);
+}
+
+/* Klíček on the home page */
+.klicek {
+  display: grid;
+  height: var(--mascot-height);
+  aspect-ratio: 130 / 240;
+  max-width: 100%;
+}
+
+.klicek__layer {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  transition: opacity var(--duration-grow) ease-out;
+}
+
+.klicek__layer--hidden {
+  opacity: 0;
+}
+
+/* The new drawing waits until the old one has faded out */
+.klicek__layer--after {
+  transition-delay: var(--duration-grow);
+}
+
+.k-body { fill: var(--klicek-yellow); }
+.k-eye { fill: var(--surface); }
+.k-pupil { fill: var(--fg); }
+.k-cheek { fill: var(--klicek-cheek); }
+.k-leaf { fill: var(--leaf); }
+.k-leaf-deep { fill: var(--leaf-deep); }
+.k-leaf-shade { fill: var(--leaf-shade); }
+.k-bark { fill: var(--bark); }
+.k-soil { fill: var(--soil); }
+.k-apple { fill: var(--apple); }
+.k-blossom { fill: var(--blossom); }
+
+.k-stem,
+.k-branch,
+.k-root {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.k-stem { stroke: var(--stem); }
+.k-branch { stroke: var(--bark); }
+.k-root { stroke: var(--root-gold); }
+
+@media (prefers-reduced-motion: reduce) {
+  .klicek__layer,
+  .klicek__layer--after {
+    transition: none;
+  }
 }
 
 @media (max-width: 600px) {
