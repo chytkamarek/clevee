@@ -24,6 +24,34 @@ describe('pickVoice', () => {
     expect(pickVoice([{ lang: 'csb-PL' }], 'cs')).toBeNull()
   })
 
+  it('prefers a gentle female voice over the first one in the list (as on macOS)', () => {
+    const mac = ['Aaron', 'Albert', 'Arthur', 'Bad News', 'Fred', 'Karen', 'Samantha', 'Whisper'].map((name) => ({ name, lang: 'en-US', localService: true }))
+    expect(pickVoice(mac, 'en')?.name).toBe('Samantha')
+  })
+
+  it('prefers a natural version of a gentle voice, and a gentle voice over a natural male one', () => {
+    const voices = [
+      { name: 'Microsoft Antonin Online (Natural) - Czech', lang: 'cs-CZ' },
+      { name: 'Zuzana', lang: 'cs-CZ', default: true, localService: true },
+      { name: 'Zuzana (Premium)', lang: 'cs-CZ', localService: true },
+    ]
+    expect(pickVoice(voices, 'cs')?.name).toBe('Zuzana (Premium)')
+    expect(pickVoice(voices.slice(0, 2), 'cs')?.name).toBe('Zuzana')
+    const edge = [...voices, { name: 'Microsoft Vlasta Online (Natural) - Czech (Czech)', lang: 'cs-CZ' }]
+    expect(pickVoice(edge, 'cs')?.name).toMatch(/Vlasta/)
+  })
+
+  it('matches gentle names as whole words only', () => {
+    const voices = [{ name: 'Avatar', lang: 'en-US', default: true }, { name: 'Ava', lang: 'en-US' }]
+    expect(pickVoice(voices, 'en')?.name).toBe('Ava')
+  })
+
+  it('never picks a joke voice, but falls back to any ordinary one', () => {
+    expect(pickVoice([{ name: 'Bubbles', lang: 'en-US' }, { name: 'Bad News', lang: 'en-US', default: true }], 'en')).toBeNull()
+    const aaron = { name: 'Aaron', lang: 'en-US' }
+    expect(pickVoice([{ name: 'Zarvox', lang: 'en-US', default: true }, aaron], 'en')).toBe(aaron)
+  })
+
   it('prefers the default voice, then an on-device one', () => {
     const remote = { lang: 'en-GB' }
     const local = { lang: 'en-US', localService: true }

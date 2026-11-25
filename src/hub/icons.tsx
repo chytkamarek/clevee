@@ -69,7 +69,6 @@ export function PlayIcon({ className }: { className?: string }) {
   )
 }
 
-/** ← back. */
 /** Read aloud: a speaker with two sound waves. */
 export function SpeakerIcon({ className }: { className?: string }) {
   return (
@@ -80,6 +79,7 @@ export function SpeakerIcon({ className }: { className?: string }) {
   )
 }
 
+/** ← back. */
 export function BackIcon({ className }: { className?: string }) {
   return (
     <svg {...svg(className)}>
