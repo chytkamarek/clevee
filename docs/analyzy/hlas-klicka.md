@@ -6,7 +6,9 @@ Nevýhoda je, že každé zařízení zní jinak a česky často strojově.
 
 **Doporučení v kostce:** zadání předgenerovat při buildu neurálním hlasem (Azure, česky Vlasta)
 a přibalit je do appky jako malé zvukové soubory, které service worker uloží pro offline. Za běhu
-se nikam nic neposílá. Co předgenerované není, přečte dál systémový hlas z #13. Podrobně níže
+se nikam nic neposílá. Co předgenerované není, přečte dál systémový hlas z #13. Pozor: tahle
+záloha dnes v Edge vybere online hlas „Natural“, který text pošle Microsoftu. Opraví to #36.
+Podrobně níže
 v části [Doporučení](#doporučení). Vlastní hlas Klíčka (cesta d) jde přidat jako druhý krok
 bez změny kódu.
 
@@ -98,10 +100,12 @@ pokud by Vlasta nezněla dobře.
 **b1, předgenerované při buildu**
 
 - **Čeština, angličtina:** výborná a na všech zařízeních stejná (ukázky 2 a 3).
-- **Offline/PWA:** soubory jdou do precache Workboxu (`vite.config.ts`, `globPatterns`).
+- **Offline/PWA:** soubory jdou do precache Workboxu. V `vite.config.ts` je potřeba přidat
+  `m4a` do `globPatterns`, dnes tam není. Jednotlivé soubory jsou daleko pod stropem
+  `maximumFileSizeToCacheInBytes` (výchozí 2 MB).
   Velikost: věta má ~3–7 s. AAC mono 32 kb/s je ~4 kB/s, tedy ~15–25 kB na větu. 100 vět
-  na jazyk vychází ~2 MB na jazyk. Precache se stahuje jednou, při aktualizaci jen změněné
-  soubory.
+  na jazyk vychází ~2 MB na jazyk, pro oba jazyky ~4 MB navíc při první instalaci. Precache
+  se stahuje jednou, při aktualizaci jen změněné soubory.
 - **Cena, licence:** placený tarif Azure S0 kvůli právům k výstupu, generuje se jen při změně
   textu. Cena je zanedbatelná. Je třeba přidat poznámku „hlas je syntetický“ (třeba do
   informací pro rodiče).
@@ -240,7 +244,7 @@ dostane „poskytovatele“ (Azure, nebo ElevenLabs) a ID hlasu. Postup:
 2. Na zkoušku vyrobit v ElevenLabs navržený hlas (d2), případně Instant klon (d1)
    a porovnat poslechem s ukázkou 3.
 3. Bude-li vlastní hlas lepší, přepnout poskytovatele a přegenerovat soubory. Kód se nemění,
-   protože název souboru obsahuje hash hlasu a staré soubory se samy nahradí.
+   protože název souboru obsahuje hash hlasu: skript vygeneruje nové soubory a nepoužívané smaže.
 
 Pro d1 je potřeba nejdřív vyřešit mluvčího a jeho písemný souhlas.
 
