@@ -10,7 +10,7 @@ se nikam nic neposílá. Co předgenerované není, přečte dál systémový hl
 v části [Doporučení](#doporučení). Vlastní hlas Klíčka (cesta d) jde přidat jako druhý krok
 bez změny kódu.
 
-Navazující implementační issue: _doplní se odkazem po založení_.
+Navazující implementační issue: [#36 Čti pevná zadání předgenerovaným hlasem Klíčka](https://github.com/chytkamarek/clevee/issues/36).
 
 ## Co vlastně čteme
 
